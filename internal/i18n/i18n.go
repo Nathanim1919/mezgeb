@@ -63,7 +63,18 @@ type Messages struct {
 	TxConfirmGeneric string
 	TxFailed         string
 
-	// Legacy transaction flow (debt/payment — for borrow/loan later)
+	// Borrow/Loan flow
+	AskBorrowCustomer string
+	AskBorrowAmount   string
+	AskBorrowProduct  string
+	AskLoanPerson     string
+	AskLoanAmount     string
+	BorrowConfirm     string // "✅ %s owes you %s"
+	LoanConfirm       string // "✅ You borrowed %s from %s"
+	BorrowSummaryTitle string
+	LoanSummaryTitle  string
+
+	// Legacy transaction flow (kept for compatibility)
 	AskCustomerName  string
 	AskTxType        string
 	BtnOwesMe        string
@@ -99,6 +110,8 @@ type Messages struct {
 	ReportProfit      string
 	ReportItemsSold   string
 	ReportItemsBought string
+	ReportBorrowed    string
+	ReportLoaned      string
 	ReportRevenue     string
 	ReportDebt        string
 	ReportTopProducts string
@@ -195,6 +208,16 @@ func amharic() *Messages {
 		TxConfirmGeneric: "✅ ግብይት ተመዝግቧል!",
 		TxFailed:         "❌ ግብይቱን ማስቀመጥ አልተቻለም። እባክዎ ደግመው ይሞክሩ።",
 
+		AskBorrowCustomer: "👤 ማን ተበደረ?",
+		AskBorrowAmount:   "💰 ስንት ብር ተበደረ?",
+		AskBorrowProduct:  "📦 ለምን ምርት? (ወይም ዝለል)",
+		AskLoanPerson:     "👤 ከማን ተበደሩ?",
+		AskLoanAmount:     "💰 ስንት ብር ተበደሩ?",
+		BorrowConfirm:     "✅ *%s* *%s* ይበደርዎታል",
+		LoanConfirm:       "✅ *%s* ከ *%s* ተበድረዋል",
+		BorrowSummaryTitle: "📋 *የብድር ማጠቃለያ*",
+		LoanSummaryTitle:  "📋 *የብድር ማጠቃለያ*",
+
 		AskCustomerName:  "👤 የደንበኛ ስም?",
 		AskTxType:        "ተቀብሏል! *%s*\n\nየግብይት አይነት?",
 		BtnOwesMe:        "💸 ይበደረኛል",
@@ -229,6 +252,8 @@ func amharic() *Messages {
 		ReportProfit:      "📈 ትርፍ: *%s*",
 		ReportItemsSold:   "📦 የተሸጡ ምርቶች: *%d*",
 		ReportItemsBought: "📦 የተገዙ ምርቶች: *%d*",
+		ReportBorrowed:    "🤝 ሰዎች የተበደሩት: *%s*",
+		ReportLoaned:      "💸 እርስዎ የተበደሩት: *%s*",
 		ReportRevenue:     "💰 ክፍያዎች: *%s*",
 		ReportDebt:        "💸 አዲስ ብድር: *%s*",
 		ReportTopProducts: "🏆 *ምርጥ የተሸጡ ምርቶች:*",
@@ -308,6 +333,16 @@ func english() *Messages {
 		TxConfirmGeneric: "✅ Transaction recorded!",
 		TxFailed:         "❌ Failed to save transaction. Please try again.",
 
+		AskBorrowCustomer: "👤 Who is borrowing?",
+		AskBorrowAmount:   "💰 How much are they borrowing? (in birr)",
+		AskBorrowProduct:  "📦 For which product? (or skip)",
+		AskLoanPerson:     "👤 Who are you borrowing from?",
+		AskLoanAmount:     "💰 How much are you borrowing? (in birr)",
+		BorrowConfirm:     "✅ *%s* now owes you *%s*",
+		LoanConfirm:       "✅ You borrowed *%s* from *%s*",
+		BorrowSummaryTitle: "📋 *Borrow Summary*",
+		LoanSummaryTitle:  "📋 *Loan Summary*",
+
 		AskCustomerName:  "👤 Customer name?",
 		AskTxType:        "Got it! *%s*\n\nWhat type of transaction?",
 		BtnOwesMe:        "💸 Owes Me",
@@ -342,6 +377,8 @@ func english() *Messages {
 		ReportProfit:      "📈 Profit: *%s*",
 		ReportItemsSold:   "📦 Items Sold: *%d*",
 		ReportItemsBought: "📦 Items Bought: *%d*",
+		ReportBorrowed:    "🤝 Others owe you: *%s*",
+		ReportLoaned:      "💸 You borrowed: *%s*",
 		ReportRevenue:     "💰 Payments: *%s*",
 		ReportDebt:        "💸 New Debt: *%s*",
 		ReportTopProducts: "🏆 *Top Sold Products:*",

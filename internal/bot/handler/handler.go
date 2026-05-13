@@ -126,6 +126,28 @@ func (h *Handler) handleConversation(ctx context.Context, msg *tgbotapi.Message,
 	case state.StepBuyConfirm:
 		h.handleBuyConfirm(ctx, msg, conv, m)
 
+	// Borrow flow
+	case state.StepBorrowCustomer:
+		h.handleBorrowCustomer(ctx, msg, conv, m)
+	case state.StepBorrowAmount:
+		h.handleBorrowAmount(ctx, msg, conv, m)
+	case state.StepBorrowProduct:
+		h.handleBorrowProduct(ctx, msg, conv, m)
+	case state.StepBorrowNote:
+		h.handleBorrowNote(ctx, msg, conv, m)
+	case state.StepBorrowConfirm:
+		h.handleBorrowConfirm(ctx, msg, conv, m)
+
+	// Loan flow
+	case state.StepLoanPerson:
+		h.handleLoanPerson(ctx, msg, conv, m)
+	case state.StepLoanAmount:
+		h.handleLoanAmount(ctx, msg, conv, m)
+	case state.StepLoanNote:
+		h.handleLoanNote(ctx, msg, conv, m)
+	case state.StepLoanConfirm:
+		h.handleLoanConfirm(ctx, msg, conv, m)
+
 	// Legacy debt/payment flow
 	case state.StepTxCustomerName:
 		h.handleTxCustomerName(ctx, msg, conv, m)

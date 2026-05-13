@@ -71,10 +71,20 @@ func formatReport(period string, r *domain.ReportData, m *i18n.Messages) string 
 		s += fmt.Sprintf(m.ReportItemsBought, r.ItemsBought) + "\n"
 	}
 
+	// Borrow/Loan section
+	hasBorrowLoan := r.TotalBorrowed > 0 || r.TotalLoaned > 0
+	if hasBorrowLoan {
+		if hasSellBuy {
+			s += "\n"
+		}
+		s += fmt.Sprintf(m.ReportBorrowed, domain.FormatBirr(r.TotalBorrowed, m.Birr)) + "\n"
+		s += fmt.Sprintf(m.ReportLoaned, domain.FormatBirr(r.TotalLoaned, m.Birr)) + "\n"
+	}
+
 	// Legacy debt/payment section (only show if data exists)
 	hasLegacy := r.TotalRevenue > 0 || r.TotalDebt > 0
 	if hasLegacy {
-		if hasSellBuy {
+		if hasSellBuy || hasBorrowLoan {
 			s += "\n"
 		}
 		s += fmt.Sprintf(m.ReportRevenue, domain.FormatBirr(r.TotalRevenue, m.Birr)) + "\n"

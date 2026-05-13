@@ -43,6 +43,7 @@ const (
 	TxPurchase TransactionType = "purchase"
 	TxSell     TransactionType = "sell"
 	TxBuy      TransactionType = "buy"
+	TxLoan     TransactionType = "loan"
 )
 
 type Transaction struct {

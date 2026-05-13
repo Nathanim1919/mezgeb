@@ -35,8 +35,16 @@ func (h *Handler) handleTxMenu(ctx context.Context, msg *tgbotapi.Message, conv 
 	case m.BtnBuy:
 		conv.TxType = domain.TxBuy
 		h.startSellBuyProductChoice(ctx, msg, conv, m, m.AskBuyProduct, state.StepBuyProduct)
-	case m.BtnBorrow, m.BtnLoan:
-		h.send(msg.Chat.ID, m.ComingSoon)
+	case m.BtnBorrow:
+		conv.TxType = domain.TxDebt
+		conv.Step = state.StepBorrowCustomer
+		h.state.Set(msg.From.ID, conv)
+		h.sendWithKeyboard(msg.Chat.ID, m.AskBorrowCustomer, keyboard.Cancel(m))
+	case m.BtnLoan:
+		conv.TxType = domain.TxLoan
+		conv.Step = state.StepLoanPerson
+		h.state.Set(msg.From.ID, conv)
+		h.sendWithKeyboard(msg.Chat.ID, m.AskLoanPerson, keyboard.Cancel(m))
 	default:
 		h.send(msg.Chat.ID, m.InvalidChoice)
 	}
@@ -333,7 +341,172 @@ func (h *Handler) handleBuyConfirm(ctx context.Context, msg *tgbotapi.Message, c
 		keyboard.MainMenu(m))
 }
 
-// ─── LEGACY FLOW (debt/payment/purchase — for borrow/loan later) ────
+// ─── BORROW FLOW ────────────────────────────────────────────────────
+// Someone borrows from you → they owe you. Customer balance increases.
+
+func (h *Handler) handleBorrowCustomer(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	name := strings.TrimSpace(msg.Text)
+	if name == "" {
+		h.send(msg.Chat.ID, m.AskBorrowCustomer)
+		return
+	}
+	if len([]rune(name)) > maxNameLength {
+		h.send(msg.Chat.ID, m.NameTooLong)
+		return
+	}
+
+	customer, err := h.svc.FindOrCreateCustomer(ctx, msg.From.ID, name)
+	if err != nil {
+		h.send(msg.Chat.ID, m.ErrorGeneric)
+		return
+	}
+
+	conv.CustomerID = customer.ID
+	conv.Customer = customer.Name
+	conv.Step = state.StepBorrowAmount
+	h.state.Set(msg.From.ID, conv)
+	h.sendWithKeyboard(msg.Chat.ID, m.AskBorrowAmount, keyboard.Cancel(m))
+}
+
+func (h *Handler) handleBorrowAmount(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	amount, ok := h.parseAmountInput(msg, m)
+	if !ok {
+		return
+	}
+
+	conv.Amount = amount
+	conv.Step = state.StepBorrowProduct
+	h.state.Set(msg.From.ID, conv)
+
+	products, _ := h.svc.ListProducts(ctx, msg.From.ID)
+	var names []string
+	for _, p := range products {
+		names = append(names, p.Name)
+	}
+	h.sendWithKeyboard(msg.Chat.ID, m.AskBorrowProduct, keyboard.ProductChoice(m, names))
+}
+
+func (h *Handler) handleBorrowProduct(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	text := strings.TrimSpace(msg.Text)
+
+	if text != m.BtnSkip && text != "" {
+		product, err := h.svc.FindOrCreateProduct(ctx, msg.From.ID, text, conv.Amount, 0)
+		if err != nil {
+			h.send(msg.Chat.ID, m.ProductError)
+		} else {
+			conv.ProductID = &product.ID
+			conv.Product = product.Name
+		}
+	}
+
+	conv.Step = state.StepBorrowNote
+	h.state.Set(msg.From.ID, conv)
+	h.sendWithKeyboard(msg.Chat.ID, m.AskNote, keyboard.SkipCancel(m))
+}
+
+func (h *Handler) handleBorrowNote(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	h.handleNoteStep(msg, conv, m, state.StepBorrowConfirm)
+}
+
+func (h *Handler) handleBorrowConfirm(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	if msg.Text != m.BtnConfirm {
+		h.send(msg.Chat.ID, m.InvalidChoice)
+		return
+	}
+
+	custID := conv.CustomerID
+	tx := &domain.Transaction{
+		UserID:     msg.From.ID,
+		CustomerID: &custID,
+		ProductID:  conv.ProductID,
+		Type:       domain.TxDebt,
+		Amount:     conv.Amount,
+		Note:       conv.Note,
+	}
+
+	if err := h.svc.AddTransaction(ctx, tx); err != nil {
+		h.sendWithKeyboard(msg.Chat.ID, m.TxFailed, keyboard.MainMenu(m))
+		h.state.Reset(msg.From.ID)
+		return
+	}
+
+	h.state.Reset(msg.From.ID)
+	h.sendWithKeyboard(msg.Chat.ID,
+		fmt.Sprintf(m.BorrowConfirm, escMD(conv.Customer), domain.FormatBirr(conv.Amount, m.Birr)),
+		keyboard.MainMenu(m))
+}
+
+// ─── LOAN FLOW ──────────────────────────────────────────────────────
+// You borrow from someone → you owe them. Customer balance decreases (goes negative).
+
+func (h *Handler) handleLoanPerson(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	name := strings.TrimSpace(msg.Text)
+	if name == "" {
+		h.send(msg.Chat.ID, m.AskLoanPerson)
+		return
+	}
+	if len([]rune(name)) > maxNameLength {
+		h.send(msg.Chat.ID, m.NameTooLong)
+		return
+	}
+
+	customer, err := h.svc.FindOrCreateCustomer(ctx, msg.From.ID, name)
+	if err != nil {
+		h.send(msg.Chat.ID, m.ErrorGeneric)
+		return
+	}
+
+	conv.CustomerID = customer.ID
+	conv.Customer = customer.Name
+	conv.Step = state.StepLoanAmount
+	h.state.Set(msg.From.ID, conv)
+	h.sendWithKeyboard(msg.Chat.ID, m.AskLoanAmount, keyboard.Cancel(m))
+}
+
+func (h *Handler) handleLoanAmount(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	amount, ok := h.parseAmountInput(msg, m)
+	if !ok {
+		return
+	}
+
+	conv.Amount = amount
+	conv.Step = state.StepLoanNote
+	h.state.Set(msg.From.ID, conv)
+	h.sendWithKeyboard(msg.Chat.ID, m.AskNote, keyboard.SkipCancel(m))
+}
+
+func (h *Handler) handleLoanNote(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	h.handleNoteStep(msg, conv, m, state.StepLoanConfirm)
+}
+
+func (h *Handler) handleLoanConfirm(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	if msg.Text != m.BtnConfirm {
+		h.send(msg.Chat.ID, m.InvalidChoice)
+		return
+	}
+
+	custID := conv.CustomerID
+	tx := &domain.Transaction{
+		UserID:     msg.From.ID,
+		CustomerID: &custID,
+		Type:       domain.TxLoan,
+		Amount:     conv.Amount,
+		Note:       conv.Note,
+	}
+
+	if err := h.svc.AddTransaction(ctx, tx); err != nil {
+		h.sendWithKeyboard(msg.Chat.ID, m.TxFailed, keyboard.MainMenu(m))
+		h.state.Reset(msg.From.ID)
+		return
+	}
+
+	h.state.Reset(msg.From.ID)
+	h.sendWithKeyboard(msg.Chat.ID,
+		fmt.Sprintf(m.LoanConfirm, domain.FormatBirr(conv.Amount, m.Birr), escMD(conv.Customer)),
+		keyboard.MainMenu(m))
+}
+
+// ─── LEGACY FLOW (kept for compatibility) ───────────────────────────
 
 func (h *Handler) handleTxCustomerName(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
 	name := strings.TrimSpace(msg.Text)
@@ -518,12 +691,48 @@ func (h *Handler) handleNoteStep(msg *tgbotapi.Message, conv *state.Conversation
 	h.state.Set(msg.From.ID, conv)
 
 	var summary string
-	if conv.TxType == domain.TxSell || conv.TxType == domain.TxBuy {
+	switch conv.TxType {
+	case domain.TxSell, domain.TxBuy:
 		summary = buildSellBuySummary(conv, m)
-	} else {
+	case domain.TxDebt:
+		summary = buildBorrowSummary(conv, m)
+	case domain.TxLoan:
+		summary = buildLoanSummary(conv, m)
+	default:
 		summary = buildLegacySummary(conv, m)
 	}
 	h.sendWithKeyboard(msg.Chat.ID, summary, keyboard.Confirm(m))
+}
+
+func buildBorrowSummary(conv *state.Conversation, m *i18n.Messages) string {
+	s := fmt.Sprintf("%s\n\n%s\n%s\n%s",
+		m.BorrowSummaryTitle,
+		fmt.Sprintf(m.TxSummaryCustomer, escMD(conv.Customer)),
+		fmt.Sprintf(m.TxSummaryType, m.BtnBorrow),
+		fmt.Sprintf(m.TxSummaryAmount, domain.FormatBirr(conv.Amount, m.Birr)),
+	)
+	if conv.Product != "" {
+		s += "\n" + fmt.Sprintf(m.TxSummaryProduct, escMD(conv.Product))
+	}
+	if conv.Note != "" {
+		s += "\n" + fmt.Sprintf(m.TxSummaryNote, escMD(conv.Note))
+	}
+	s += "\n\n" + m.TxSummaryConfirm
+	return s
+}
+
+func buildLoanSummary(conv *state.Conversation, m *i18n.Messages) string {
+	s := fmt.Sprintf("%s\n\n%s\n%s\n%s",
+		m.LoanSummaryTitle,
+		fmt.Sprintf(m.TxSummaryCustomer, escMD(conv.Customer)),
+		fmt.Sprintf(m.TxSummaryType, m.BtnLoan),
+		fmt.Sprintf(m.TxSummaryAmount, domain.FormatBirr(conv.Amount, m.Birr)),
+	)
+	if conv.Note != "" {
+		s += "\n" + fmt.Sprintf(m.TxSummaryNote, escMD(conv.Note))
+	}
+	s += "\n\n" + m.TxSummaryConfirm
+	return s
 }
 
 func buildLegacySummary(conv *state.Conversation, m *i18n.Messages) string {
@@ -555,6 +764,21 @@ func legacyTypeLabel(t domain.TransactionType, m *i18n.Messages) string {
 	default:
 		return string(t)
 	}
+}
+
+func (h *Handler) parseAmountInput(msg *tgbotapi.Message, m *i18n.Messages) (int64, bool) {
+	text := strings.TrimSpace(msg.Text)
+	text = strings.ReplaceAll(text, ",", "")
+	amount, err := parseAmount(text)
+	if err != nil || amount <= 0 {
+		h.send(msg.Chat.ID, m.InvalidAmount)
+		return 0, false
+	}
+	if amount > maxAmountCents {
+		h.send(msg.Chat.ID, m.AmountTooLarge)
+		return 0, false
+	}
+	return amount, true
 }
 
 func (h *Handler) parsePrice(msg *tgbotapi.Message, m *i18n.Messages) (int64, bool) {

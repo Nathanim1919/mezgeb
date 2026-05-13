@@ -33,7 +33,20 @@ const (
 	StepBuyNote            // optional note
 	StepBuyConfirm         // confirm
 
-	// Legacy debt/payment flow (borrow/loan — coming later)
+	// Borrow flow: customer → amount → product (optional) → note → confirm
+	StepBorrowCustomer
+	StepBorrowAmount
+	StepBorrowProduct
+	StepBorrowNote
+	StepBorrowConfirm
+
+	// Loan flow: person → amount → note → confirm
+	StepLoanPerson
+	StepLoanAmount
+	StepLoanNote
+	StepLoanConfirm
+
+	// Legacy debt/payment flow (kept for compatibility)
 	StepTxCustomerName
 	StepTxType
 	StepTxAmount

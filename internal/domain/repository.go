@@ -34,8 +34,10 @@ type ReportData struct {
 	TotalTransactions int
 	TotalSales        int64 // money in from sell transactions
 	TotalExpenses     int64 // money out from buy transactions
+	TotalBorrowed     int64 // others owe you (borrow/debt)
+	TotalLoaned       int64 // you owe others (loan)
 	TotalRevenue      int64 // legacy: payments + purchases
-	TotalDebt         int64 // new debt added
+	TotalDebt         int64 // legacy: new debt added
 	ItemsSold         int64 // total quantity sold
 	ItemsBought       int64 // total quantity bought
 	TopProducts       []ProductStat

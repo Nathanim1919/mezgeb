@@ -34,6 +34,8 @@ func (s *Service) AddTransaction(ctx context.Context, tx *domain.Transaction) er
 		stockDelta = -tx.Quantity // sold items leave stock
 	case domain.TxBuy:
 		stockDelta = tx.Quantity // bought items enter stock
+	case domain.TxLoan:
+		balanceDelta = -tx.Amount // you borrowed, you owe them
 	}
 
 	return s.Transactions.CreateWithBalanceUpdate(ctx, tx, balanceDelta, stockDelta)
