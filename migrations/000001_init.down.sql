@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS transactions;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS users;

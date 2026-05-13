@@ -1,0 +1,7 @@
+.env
+mezgeb
+tmp/
+*.exe
+*.test
+*.out
+vendor/

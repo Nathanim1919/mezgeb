@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mezgeb
+      POSTGRES_PASSWORD: mezgeb
+      POSTGRES_DB: mezgeb
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  bot:
+    build: .
+    env_file: .env
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  pgdata:
