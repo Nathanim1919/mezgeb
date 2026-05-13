@@ -17,6 +17,7 @@ const (
 	StepTxType
 	StepTxAmount
 	StepTxProduct
+	StepTxNote
 	StepTxConfirm
 
 	// Product flow
@@ -37,6 +38,7 @@ type Conversation struct {
 	Amount     int64
 	ProductID  *int64
 	Product    string
+	Note       string
 }
 
 // Manager is a thread-safe in-memory conversation state store.

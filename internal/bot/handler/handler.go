@@ -35,6 +35,8 @@ func (h *Handler) HandleUpdate(update tgbotapi.Update) {
 
 	// Rate limit: 30 messages per minute per user
 	if !h.limiter.Allow(userID) {
+		m := h.getMessages(ctx, userID)
+		h.send(msg.Chat.ID, m.RateLimited)
 		return
 	}
 
@@ -96,6 +98,8 @@ func (h *Handler) handleConversation(ctx context.Context, msg *tgbotapi.Message,
 		h.handleTxAmount(ctx, msg, conv, m)
 	case state.StepTxProduct:
 		h.handleTxProduct(ctx, msg, conv, m)
+	case state.StepTxNote:
+		h.handleTxNote(ctx, msg, conv, m)
 	case state.StepTxConfirm:
 		h.handleTxConfirm(ctx, msg, conv, m)
 	case state.StepProductName:

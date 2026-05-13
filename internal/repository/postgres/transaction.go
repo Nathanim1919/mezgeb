@@ -16,12 +16,33 @@ func NewTransactionRepo(pool *pgxpool.Pool) *TransactionRepo {
 	return &TransactionRepo{pool: pool}
 }
 
-func (r *TransactionRepo) Create(ctx context.Context, tx *domain.Transaction) error {
-	return r.pool.QueryRow(ctx, `
+// CreateWithBalanceUpdate atomically inserts a transaction and updates the customer balance
+// in a single database transaction. Both succeed or both fail.
+func (r *TransactionRepo) CreateWithBalanceUpdate(ctx context.Context, tx *domain.Transaction, balanceDelta int64) error {
+	dbTx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer dbTx.Rollback(ctx)
+
+	err = dbTx.QueryRow(ctx, `
 		INSERT INTO transactions (user_id, customer_id, product_id, type, amount, note)
 		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, created_at
 	`, tx.UserID, tx.CustomerID, tx.ProductID, tx.Type, tx.Amount, tx.Note).Scan(&tx.ID, &tx.CreatedAt)
+	if err != nil {
+		return err
+	}
+
+	_, err = dbTx.Exec(ctx, `
+		UPDATE customers SET balance = balance + $1, updated_at = NOW()
+		WHERE id = $2 AND user_id = $3
+	`, balanceDelta, tx.CustomerID, tx.UserID)
+	if err != nil {
+		return err
+	}
+
+	return dbTx.Commit(ctx)
 }
 
 func (r *TransactionRepo) ListByUser(ctx context.Context, userID int64, from, to time.Time) ([]domain.Transaction, error) {

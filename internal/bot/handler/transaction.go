@@ -19,10 +19,19 @@ func (h *Handler) startTransaction(msg *tgbotapi.Message, m *i18n.Messages) {
 	h.sendWithKeyboard(msg.Chat.ID, m.AskCustomerName, keyboard.Cancel(m))
 }
 
+const (
+	maxNameLength = 100
+	maxAmountCents = 10_000_000_00 // 10 million birr in cents
+)
+
 func (h *Handler) handleTxCustomerName(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
 	name := strings.TrimSpace(msg.Text)
 	if name == "" {
 		h.send(msg.Chat.ID, m.EnterCustomerName)
+		return
+	}
+	if len([]rune(name)) > maxNameLength {
+		h.send(msg.Chat.ID, m.NameTooLong)
 		return
 	}
 
@@ -67,6 +76,10 @@ func (h *Handler) handleTxAmount(ctx context.Context, msg *tgbotapi.Message, con
 		h.send(msg.Chat.ID, m.InvalidAmount)
 		return
 	}
+	if amount > maxAmountCents {
+		h.send(msg.Chat.ID, m.AmountTooLarge)
+		return
+	}
 
 	conv.Amount = amount
 	conv.Step = state.StepTxProduct
@@ -93,6 +106,22 @@ func (h *Handler) handleTxProduct(ctx context.Context, msg *tgbotapi.Message, co
 		}
 	}
 
+	conv.Step = state.StepTxNote
+	h.state.Set(msg.From.ID, conv)
+
+	h.sendWithKeyboard(msg.Chat.ID, m.AskNote, keyboard.SkipCancel(m))
+}
+
+func (h *Handler) handleTxNote(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	text := strings.TrimSpace(msg.Text)
+
+	if text != m.BtnSkip && text != "" {
+		if len(text) > 200 {
+			text = text[:200]
+		}
+		conv.Note = text
+	}
+
 	conv.Step = state.StepTxConfirm
 	h.state.Set(msg.From.ID, conv)
 
@@ -112,6 +141,7 @@ func (h *Handler) handleTxConfirm(ctx context.Context, msg *tgbotapi.Message, co
 		ProductID:  conv.ProductID,
 		Type:       conv.TxType,
 		Amount:     conv.Amount,
+		Note:       conv.Note,
 	}
 
 	if err := h.svc.AddTransaction(ctx, tx); err != nil {
@@ -135,6 +165,9 @@ func buildTxSummary(conv *state.Conversation, m *i18n.Messages) string {
 	)
 	if conv.Product != "" {
 		s += "\n" + fmt.Sprintf(m.TxSummaryProduct, escMD(conv.Product))
+	}
+	if conv.Note != "" {
+		s += "\n" + fmt.Sprintf(m.TxSummaryNote, escMD(conv.Note))
 	}
 	s += "\n\n" + m.TxSummaryConfirm
 	return s

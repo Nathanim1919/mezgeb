@@ -43,6 +43,10 @@ func (h *Handler) handleProductName(ctx context.Context, msg *tgbotapi.Message, 
 		h.send(msg.Chat.ID, m.EnterCustomerName)
 		return
 	}
+	if len([]rune(name)) > maxNameLength {
+		h.send(msg.Chat.ID, m.NameTooLong)
+		return
+	}
 
 	conv.Product = name
 	conv.Step = state.StepProductPrice
@@ -56,12 +60,16 @@ func (h *Handler) handleProductPrice(ctx context.Context, msg *tgbotapi.Message,
 	text = strings.ReplaceAll(text, ",", "")
 
 	price, err := strconv.ParseInt(text, 10, 64)
-	if err != nil || price < 0 {
+	if err != nil || price <= 0 {
 		h.send(msg.Chat.ID, m.InvalidPrice)
 		return
 	}
 
 	priceCents := price * 100
+	if priceCents > maxAmountCents {
+		h.send(msg.Chat.ID, m.AmountTooLarge)
+		return
+	}
 	product, err := h.svc.FindOrCreateProduct(ctx, msg.From.ID, conv.Product, priceCents)
 	if err != nil {
 		h.sendWithKeyboard(msg.Chat.ID, m.ProductError2, keyboard.MainMenu(m))

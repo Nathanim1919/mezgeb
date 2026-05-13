@@ -78,6 +78,15 @@ func Cancel(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	)
 }
 
+func SkipCancel(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnSkip),
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
 func Settings(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(

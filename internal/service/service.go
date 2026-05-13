@@ -20,11 +20,6 @@ func (s *Service) EnsureUser(ctx context.Context, user *domain.User) error {
 }
 
 func (s *Service) AddTransaction(ctx context.Context, tx *domain.Transaction) error {
-	if err := s.Transactions.Create(ctx, tx); err != nil {
-		return err
-	}
-
-	// Update customer balance
 	var delta int64
 	switch tx.Type {
 	case domain.TxDebt:
@@ -34,7 +29,9 @@ func (s *Service) AddTransaction(ctx context.Context, tx *domain.Transaction) er
 	case domain.TxPurchase:
 		delta = tx.Amount // purchase on credit = debt
 	}
-	return s.Customers.UpdateBalance(ctx, tx.UserID, tx.CustomerID, delta)
+
+	// Atomic: transaction insert + balance update in a single DB transaction
+	return s.Transactions.CreateWithBalanceUpdate(ctx, tx, delta)
 }
 
 func (s *Service) GetReport(ctx context.Context, userID int64, from, to time.Time) (*domain.ReportData, error) {

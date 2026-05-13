@@ -43,7 +43,9 @@ type Messages struct {
 	BtnSkip          string
 	BtnCancel        string
 	BtnConfirm       string
+	AskNote          string
 	TxSummaryTitle   string
+	TxSummaryNote    string
 	TxSummaryCustomer string
 	TxSummaryType    string
 	TxSummaryAmount  string
@@ -55,8 +57,10 @@ type Messages struct {
 	TxConfirmGeneric string
 	TxFailed         string
 	InvalidAmount    string
+	AmountTooLarge   string
 	InvalidChoice    string
 	EnterCustomerName string
+	NameTooLong      string
 	ProductError     string
 
 	// Reports
@@ -98,6 +102,7 @@ type Messages struct {
 	// General
 	NotUnderstood    string
 	ErrorGeneric     string
+	RateLimited      string
 
 	// Currency
 	Birr             string
@@ -135,7 +140,9 @@ func amharic() *Messages {
 		BtnSkip:          "⏭ ዝለል",
 		BtnCancel:        "❌ ሰርዝ",
 		BtnConfirm:       "✅ አረጋግጥ",
+		AskNote:          "📝 ማስታወሻ? (ወይም ዝለል)\nምሳሌ: ለ3 ኪሎ ስኳር",
 		TxSummaryTitle:   "📋 *የግብይት ማጠቃለያ*",
+		TxSummaryNote:    "📝 ማስታወሻ: *%s*",
 		TxSummaryCustomer: "👤 ደንበኛ: *%s*",
 		TxSummaryType:    "📝 አይነት: *%s*",
 		TxSummaryAmount:  "💰 መጠን: *%s*",
@@ -147,8 +154,10 @@ func amharic() *Messages {
 		TxConfirmGeneric: "✅ ግብይት ተመዝግቧል!",
 		TxFailed:         "❌ ግብይቱን ማስቀመጥ አልተቻለም። እባክዎ ደግመው ይሞክሩ።",
 		InvalidAmount:    "እባክዎ ትክክለኛ መጠን ያስገቡ።\nምሳሌ: `1500`፣ `250.50`",
+		AmountTooLarge:   "⚠️ ከፍተኛ መጠን 10,000,000 ብር ነው።",
 		InvalidChoice:    "እባክዎ ከታች ያሉትን ቁልፎች ይጠቀሙ 👇",
 		EnterCustomerName: "እባክዎ የደንበኛ ስም ያስገቡ።",
+		NameTooLong:      "⚠️ ስሙ በጣም ረጅም ነው። እባክዎ ያሳጥሩት።",
 		ProductError:     "❌ ከምርቱ ጋር ችግር ተፈጥሯል። እየዘለልን ነው።",
 
 		ReportChoose:     "📊 ጊዜ ይምረጡ:",
@@ -185,6 +194,7 @@ func amharic() *Messages {
 
 		NotUnderstood:    "ይቅርታ፣ አልገባኝም። ከታች ያለውን ሜኒው ይጠቀሙ 👇",
 		ErrorGeneric:     "❌ ችግር ተፈጥሯል። እባክዎ ደግመው ይሞክሩ።",
+		RateLimited:      "⏳ እባክዎ ትንሽ ይጠብቁ። በጣም ብዙ መልዕክቶች።",
 		Birr:             "ብር",
 	}
 }
@@ -209,7 +219,9 @@ func english() *Messages {
 		BtnSkip:          "⏭ Skip",
 		BtnCancel:        "❌ Cancel",
 		BtnConfirm:       "✅ Confirm",
+		AskNote:          "📝 Add a note? (or skip)\nExample: for 3kg sugar",
 		TxSummaryTitle:   "📋 *Transaction Summary*",
+		TxSummaryNote:    "📝 Note: *%s*",
 		TxSummaryCustomer: "👤 Customer: *%s*",
 		TxSummaryType:    "📝 Type: *%s*",
 		TxSummaryAmount:  "💰 Amount: *%s*",
@@ -221,8 +233,10 @@ func english() *Messages {
 		TxConfirmGeneric: "✅ Transaction recorded!",
 		TxFailed:         "❌ Failed to save transaction. Please try again.",
 		InvalidAmount:    "Please enter a valid amount.\nExamples: `1500`, `250.50`",
+		AmountTooLarge:   "⚠️ Maximum amount is 10,000,000 birr.",
 		InvalidChoice:    "Please choose from the buttons below 👇",
 		EnterCustomerName: "Please enter a customer name.",
+		NameTooLong:      "⚠️ Name is too long. Please shorten it.",
 		ProductError:     "❌ Error with product. Skipping.",
 
 		ReportChoose:     "📊 Choose a time period:",
@@ -259,6 +273,7 @@ func english() *Messages {
 
 		NotUnderstood:    "I didn't understand that. Use the menu below 👇",
 		ErrorGeneric:     "❌ Something went wrong. Please try again.",
+		RateLimited:      "⏳ Please wait a moment. Too many messages.",
 		Birr:             "birr",
 	}
 }

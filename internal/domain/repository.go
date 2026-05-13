@@ -25,7 +25,8 @@ type ProductRepo interface {
 }
 
 type TransactionRepo interface {
-	Create(ctx context.Context, tx *Transaction) error
+	// CreateWithBalanceUpdate atomically creates a transaction and updates the customer balance.
+	CreateWithBalanceUpdate(ctx context.Context, tx *Transaction, balanceDelta int64) error
 	ListByUser(ctx context.Context, userID int64, from, to time.Time) ([]Transaction, error)
 }
 

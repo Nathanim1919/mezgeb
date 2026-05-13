@@ -56,15 +56,37 @@ type Transaction struct {
 	ProductName  string
 }
 
-// FormatBirr converts cents to a human-readable birr string.
+// FormatBirr converts cents to a human-readable birr string with thousands separators.
+// Example: 150000000 cents → "1,500,000 ብር", 150050 cents → "1,500.50 ብር"
 func FormatBirr(cents int64, label string) string {
 	whole := cents / 100
 	frac := cents % 100
 	if label == "" {
 		label = "ብር"
 	}
+	wholeStr := formatWithCommas(whole)
 	if frac == 0 {
-		return fmt.Sprintf("%d %s", whole, label)
+		return fmt.Sprintf("%s %s", wholeStr, label)
 	}
-	return fmt.Sprintf("%d.%02d %s", whole, frac, label)
+	return fmt.Sprintf("%s.%02d %s", wholeStr, frac, label)
+}
+
+// formatWithCommas adds comma separators to an integer (e.g. 1500000 → "1,500,000").
+func formatWithCommas(n int64) string {
+	if n < 0 {
+		return "-" + formatWithCommas(-n)
+	}
+	s := fmt.Sprintf("%d", n)
+	if len(s) <= 3 {
+		return s
+	}
+	// Insert commas from the right
+	var result []byte
+	for i, c := range s {
+		if i > 0 && (len(s)-i)%3 == 0 {
+			result = append(result, ',')
+		}
+		result = append(result, byte(c))
+	}
+	return string(result)
 }
