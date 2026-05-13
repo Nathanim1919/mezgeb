@@ -26,3 +26,17 @@ func (r *UserRepo) Upsert(ctx context.Context, user *domain.User) error {
 	`, user.ID, user.FirstName, user.Username, user.LanguageCode)
 	return err
 }
+
+func (r *UserRepo) GetLang(ctx context.Context, userID int64) (string, error) {
+	var lang string
+	err := r.pool.QueryRow(ctx, `SELECT lang FROM users WHERE id = $1`, userID).Scan(&lang)
+	if err != nil {
+		return "am", nil // default to Amharic
+	}
+	return lang, nil
+}
+
+func (r *UserRepo) SetLang(ctx context.Context, userID int64, lang string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE users SET lang = $1, updated_at = NOW() WHERE id = $2`, lang, userID)
+	return err
+}

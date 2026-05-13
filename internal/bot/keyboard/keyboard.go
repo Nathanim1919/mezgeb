@@ -1,76 +1,99 @@
 package keyboard
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import (
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/nathanim1919/mezgeb/internal/i18n"
+)
 
-func MainMenu() tgbotapi.ReplyKeyboardMarkup {
+func MainMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("➕ Add Transaction"),
-			tgbotapi.NewKeyboardButton("📊 Reports"),
+			tgbotapi.NewKeyboardButton(m.BtnAddTx),
+			tgbotapi.NewKeyboardButton(m.BtnReports),
 		),
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("👥 Customers"),
-			tgbotapi.NewKeyboardButton("📦 Products"),
+			tgbotapi.NewKeyboardButton(m.BtnCustomers),
+			tgbotapi.NewKeyboardButton(m.BtnProducts),
 		),
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("⚙️ Settings"),
+			tgbotapi.NewKeyboardButton(m.BtnSettings),
 		),
 	)
 }
 
-func TransactionType() tgbotapi.ReplyKeyboardMarkup {
+func TransactionType(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("💸 Owes Me"),
-			tgbotapi.NewKeyboardButton("💰 Paid Me"),
+			tgbotapi.NewKeyboardButton(m.BtnOwesMe),
+			tgbotapi.NewKeyboardButton(m.BtnPaidMe),
 		),
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("🛒 Bought Product"),
+			tgbotapi.NewKeyboardButton(m.BtnBoughtProduct),
 		),
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("❌ Cancel"),
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
 		),
 	)
 }
 
-func ProductChoice(products []string) tgbotapi.ReplyKeyboardMarkup {
+func ProductChoice(m *i18n.Messages, products []string) tgbotapi.ReplyKeyboardMarkup {
 	var rows [][]tgbotapi.KeyboardButton
 	for _, p := range products {
 		rows = append(rows, tgbotapi.NewKeyboardButtonRow(tgbotapi.NewKeyboardButton(p)))
 	}
 	rows = append(rows, tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("⏭ Skip"),
-		tgbotapi.NewKeyboardButton("❌ Cancel"),
+		tgbotapi.NewKeyboardButton(m.BtnSkip),
+		tgbotapi.NewKeyboardButton(m.BtnCancel),
 	))
 	return tgbotapi.NewReplyKeyboard(rows...)
 }
 
-func Confirm() tgbotapi.ReplyKeyboardMarkup {
+func Confirm(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("✅ Confirm"),
-			tgbotapi.NewKeyboardButton("❌ Cancel"),
+			tgbotapi.NewKeyboardButton(m.BtnConfirm),
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
 		),
 	)
 }
 
-func ReportPeriod() tgbotapi.ReplyKeyboardMarkup {
+func ReportPeriod(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("📅 Today"),
-			tgbotapi.NewKeyboardButton("📆 This Week"),
-			tgbotapi.NewKeyboardButton("🗓 This Month"),
+			tgbotapi.NewKeyboardButton(m.BtnToday),
+			tgbotapi.NewKeyboardButton(m.BtnThisWeek),
+			tgbotapi.NewKeyboardButton(m.BtnThisMonth),
 		),
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("❌ Cancel"),
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
 		),
 	)
 }
 
-func Cancel() tgbotapi.ReplyKeyboardMarkup {
+func Cancel(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("❌ Cancel"),
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
+func Settings(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnLanguage),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
+func LanguageChoice() tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("🇪🇹 አማርኛ"),
+			tgbotapi.NewKeyboardButton("🇬🇧 English"),
 		),
 	)
 }

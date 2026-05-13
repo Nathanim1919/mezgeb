@@ -52,21 +52,22 @@ func (r *CustomerRepo) ListByUser(ctx context.Context, userID int64) ([]domain.C
 	return customers, nil
 }
 
-func (r *CustomerRepo) GetByID(ctx context.Context, id int64) (*domain.Customer, error) {
+func (r *CustomerRepo) GetByID(ctx context.Context, userID, id int64) (*domain.Customer, error) {
 	var c domain.Customer
 	err := r.pool.QueryRow(ctx, `
 		SELECT id, user_id, name, phone, balance, created_at, updated_at
-		FROM customers WHERE id = $1
-	`, id).Scan(&c.ID, &c.UserID, &c.Name, &c.Phone, &c.Balance, &c.CreatedAt, &c.UpdatedAt)
+		FROM customers WHERE id = $1 AND user_id = $2
+	`, id, userID).Scan(&c.ID, &c.UserID, &c.Name, &c.Phone, &c.Balance, &c.CreatedAt, &c.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
 	return &c, nil
 }
 
-func (r *CustomerRepo) UpdateBalance(ctx context.Context, id int64, delta int64) error {
+func (r *CustomerRepo) UpdateBalance(ctx context.Context, userID, id int64, delta int64) error {
 	_, err := r.pool.Exec(ctx, `
-		UPDATE customers SET balance = balance + $1, updated_at = NOW() WHERE id = $2
-	`, delta, id)
+		UPDATE customers SET balance = balance + $1, updated_at = NOW()
+		WHERE id = $2 AND user_id = $3
+	`, delta, id, userID)
 	return err
 }

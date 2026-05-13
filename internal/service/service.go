@@ -34,7 +34,7 @@ func (s *Service) AddTransaction(ctx context.Context, tx *domain.Transaction) er
 	case domain.TxPurchase:
 		delta = tx.Amount // purchase on credit = debt
 	}
-	return s.Customers.UpdateBalance(ctx, tx.CustomerID, delta)
+	return s.Customers.UpdateBalance(ctx, tx.UserID, tx.CustomerID, delta)
 }
 
 func (s *Service) GetReport(ctx context.Context, userID int64, from, to time.Time) (*domain.ReportData, error) {
@@ -57,6 +57,14 @@ func (s *Service) ListProducts(ctx context.Context, userID int64) ([]domain.Prod
 	return s.Products.ListByUser(ctx, userID)
 }
 
-func (s *Service) GetCustomer(ctx context.Context, id int64) (*domain.Customer, error) {
-	return s.Customers.GetByID(ctx, id)
+func (s *Service) GetCustomer(ctx context.Context, userID, id int64) (*domain.Customer, error) {
+	return s.Customers.GetByID(ctx, userID, id)
+}
+
+func (s *Service) GetLang(ctx context.Context, userID int64) (string, error) {
+	return s.Users.GetLang(ctx, userID)
+}
+
+func (s *Service) SetLang(ctx context.Context, userID int64, lang string) error {
+	return s.Users.SetLang(ctx, userID, lang)
 }

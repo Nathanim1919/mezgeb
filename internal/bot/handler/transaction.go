@@ -10,24 +10,25 @@ import (
 	"github.com/nathanim1919/mezgeb/internal/bot/keyboard"
 	"github.com/nathanim1919/mezgeb/internal/bot/state"
 	"github.com/nathanim1919/mezgeb/internal/domain"
+	"github.com/nathanim1919/mezgeb/internal/i18n"
 )
 
-func (h *Handler) startTransaction(msg *tgbotapi.Message) {
+func (h *Handler) startTransaction(msg *tgbotapi.Message, m *i18n.Messages) {
 	conv := &state.Conversation{Step: state.StepTxCustomerName}
 	h.state.Set(msg.From.ID, conv)
-	h.sendWithKeyboard(msg.Chat.ID, "👤 Customer name?", keyboard.Cancel())
+	h.sendWithKeyboard(msg.Chat.ID, m.AskCustomerName, keyboard.Cancel(m))
 }
 
-func (h *Handler) handleTxCustomerName(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation) {
+func (h *Handler) handleTxCustomerName(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
 	name := strings.TrimSpace(msg.Text)
 	if name == "" {
-		h.send(msg.Chat.ID, "Please enter a customer name.")
+		h.send(msg.Chat.ID, m.EnterCustomerName)
 		return
 	}
 
 	customer, err := h.svc.FindOrCreateCustomer(ctx, msg.From.ID, name)
 	if err != nil {
-		h.send(msg.Chat.ID, "❌ Error saving customer. Please try again.")
+		h.send(msg.Chat.ID, m.ErrorGeneric)
 		return
 	}
 
@@ -36,34 +37,34 @@ func (h *Handler) handleTxCustomerName(ctx context.Context, msg *tgbotapi.Messag
 	conv.Step = state.StepTxType
 	h.state.Set(msg.From.ID, conv)
 
-	h.sendWithKeyboard(msg.Chat.ID, fmt.Sprintf("Got it! *%s*\n\nWhat type of transaction?", customer.Name), keyboard.TransactionType())
+	h.sendWithKeyboard(msg.Chat.ID, fmt.Sprintf(m.AskTxType, customer.Name), keyboard.TransactionType(m))
 }
 
-func (h *Handler) handleTxType(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation) {
+func (h *Handler) handleTxType(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
 	switch msg.Text {
-	case "💸 Owes Me":
+	case m.BtnOwesMe:
 		conv.TxType = domain.TxDebt
-	case "💰 Paid Me":
+	case m.BtnPaidMe:
 		conv.TxType = domain.TxPayment
-	case "🛒 Bought Product":
+	case m.BtnBoughtProduct:
 		conv.TxType = domain.TxPurchase
 	default:
-		h.send(msg.Chat.ID, "Please choose from the buttons below 👇")
+		h.send(msg.Chat.ID, m.InvalidChoice)
 		return
 	}
 
 	conv.Step = state.StepTxAmount
 	h.state.Set(msg.From.ID, conv)
-	h.sendWithKeyboard(msg.Chat.ID, "💰 How much? (in birr)", keyboard.Cancel())
+	h.sendWithKeyboard(msg.Chat.ID, m.AskAmount, keyboard.Cancel(m))
 }
 
-func (h *Handler) handleTxAmount(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation) {
+func (h *Handler) handleTxAmount(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
 	text := strings.TrimSpace(msg.Text)
 	text = strings.ReplaceAll(text, ",", "")
 
 	amount, err := parseAmount(text)
 	if err != nil || amount <= 0 {
-		h.send(msg.Chat.ID, "Please enter a valid amount.\nExamples: `1500`, `250.50`")
+		h.send(msg.Chat.ID, m.InvalidAmount)
 		return
 	}
 
@@ -71,22 +72,21 @@ func (h *Handler) handleTxAmount(ctx context.Context, msg *tgbotapi.Message, con
 	conv.Step = state.StepTxProduct
 	h.state.Set(msg.From.ID, conv)
 
-	// Show existing products or skip
 	products, _ := h.svc.ListProducts(ctx, msg.From.ID)
 	var names []string
 	for _, p := range products {
 		names = append(names, p.Name)
 	}
-	h.sendWithKeyboard(msg.Chat.ID, "📦 Which product? (or skip)", keyboard.ProductChoice(names))
+	h.sendWithKeyboard(msg.Chat.ID, m.AskProduct, keyboard.ProductChoice(m, names))
 }
 
-func (h *Handler) handleTxProduct(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation) {
+func (h *Handler) handleTxProduct(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
 	text := strings.TrimSpace(msg.Text)
 
-	if text != "⏭ Skip" && text != "" {
+	if text != m.BtnSkip && text != "" {
 		product, err := h.svc.FindOrCreateProduct(ctx, msg.From.ID, text, conv.Amount)
 		if err != nil {
-			h.send(msg.Chat.ID, "❌ Error with product. Skipping.")
+			h.send(msg.Chat.ID, m.ProductError)
 		} else {
 			conv.ProductID = &product.ID
 			conv.Product = product.Name
@@ -96,13 +96,13 @@ func (h *Handler) handleTxProduct(ctx context.Context, msg *tgbotapi.Message, co
 	conv.Step = state.StepTxConfirm
 	h.state.Set(msg.From.ID, conv)
 
-	summary := h.buildTxSummary(conv)
-	h.sendWithKeyboard(msg.Chat.ID, summary, keyboard.Confirm())
+	summary := buildTxSummary(conv, m)
+	h.sendWithKeyboard(msg.Chat.ID, summary, keyboard.Confirm(m))
 }
 
-func (h *Handler) handleTxConfirm(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation) {
-	if msg.Text != "✅ Confirm" {
-		h.send(msg.Chat.ID, "Tap ✅ Confirm or ❌ Cancel")
+func (h *Handler) handleTxConfirm(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	if msg.Text != m.BtnConfirm {
+		h.send(msg.Chat.ID, m.InvalidChoice)
 		return
 	}
 
@@ -115,64 +115,67 @@ func (h *Handler) handleTxConfirm(ctx context.Context, msg *tgbotapi.Message, co
 	}
 
 	if err := h.svc.AddTransaction(ctx, tx); err != nil {
-		h.sendWithKeyboard(msg.Chat.ID, "❌ Failed to save transaction. Please try again.", keyboard.MainMenu())
+		h.sendWithKeyboard(msg.Chat.ID, m.TxFailed, keyboard.MainMenu(m))
 		h.state.Reset(msg.From.ID)
 		return
 	}
 
 	h.state.Reset(msg.From.ID)
-
-	confirmation := h.buildConfirmation(conv)
-	h.sendWithKeyboard(msg.Chat.ID, confirmation, keyboard.MainMenu())
+	confirmation := buildConfirmation(conv, m)
+	h.sendWithKeyboard(msg.Chat.ID, confirmation, keyboard.MainMenu(m))
 }
 
-func (h *Handler) buildTxSummary(conv *state.Conversation) string {
-	typeLabel := txTypeLabel(conv.TxType)
-	s := fmt.Sprintf("📋 *Transaction Summary*\n\n👤 Customer: *%s*\n📝 Type: *%s*\n💰 Amount: *%s*",
-		conv.Customer, typeLabel, domain.FormatBirr(conv.Amount))
+func buildTxSummary(conv *state.Conversation, m *i18n.Messages) string {
+	typeLabel := txTypeLabel(conv.TxType, m)
+	s := fmt.Sprintf("%s\n\n%s\n%s\n%s",
+		m.TxSummaryTitle,
+		fmt.Sprintf(m.TxSummaryCustomer, escMD(conv.Customer)),
+		fmt.Sprintf(m.TxSummaryType, typeLabel),
+		fmt.Sprintf(m.TxSummaryAmount, domain.FormatBirr(conv.Amount, m.Birr)),
+	)
 	if conv.Product != "" {
-		s += fmt.Sprintf("\n📦 Product: *%s*", conv.Product)
+		s += "\n" + fmt.Sprintf(m.TxSummaryProduct, escMD(conv.Product))
 	}
-	s += "\n\nConfirm?"
+	s += "\n\n" + m.TxSummaryConfirm
 	return s
 }
 
-func (h *Handler) buildConfirmation(conv *state.Conversation) string {
+func buildConfirmation(conv *state.Conversation, m *i18n.Messages) string {
+	birr := domain.FormatBirr(conv.Amount, m.Birr)
+	customer := escMD(conv.Customer)
+	product := escMD(conv.Product)
 	switch conv.TxType {
 	case domain.TxDebt:
-		s := fmt.Sprintf("✅ *%s* now owes you *%s*", conv.Customer, domain.FormatBirr(conv.Amount))
-		if conv.Product != "" {
-			s += fmt.Sprintf(" for *%s*", conv.Product)
+		s := fmt.Sprintf(m.TxConfirmDebt, customer, birr)
+		if product != "" {
+			s += " — *" + product + "*"
 		}
 		return s
 	case domain.TxPayment:
-		return fmt.Sprintf("✅ Recorded *%s* payment from *%s*", domain.FormatBirr(conv.Amount), conv.Customer)
+		return fmt.Sprintf(m.TxConfirmPayment, birr, customer)
 	case domain.TxPurchase:
-		s := fmt.Sprintf("✅ *%s* bought", conv.Customer)
-		if conv.Product != "" {
-			s += fmt.Sprintf(" *%s*", conv.Product)
+		if product == "" {
+			product = "-"
 		}
-		s += fmt.Sprintf(" for *%s*", domain.FormatBirr(conv.Amount))
-		return s
+		return fmt.Sprintf(m.TxConfirmPurchase, customer, product, birr)
 	default:
-		return "✅ Transaction recorded!"
+		return m.TxConfirmGeneric
 	}
 }
 
-func txTypeLabel(t domain.TransactionType) string {
+func txTypeLabel(t domain.TransactionType, m *i18n.Messages) string {
 	switch t {
 	case domain.TxDebt:
-		return "💸 Owes Me"
+		return m.BtnOwesMe
 	case domain.TxPayment:
-		return "💰 Paid Me"
+		return m.BtnPaidMe
 	case domain.TxPurchase:
-		return "🛒 Bought Product"
+		return m.BtnBoughtProduct
 	default:
 		return string(t)
 	}
 }
 
-// parseAmount parses "1500" or "250.50" into cents (int64).
 func parseAmount(s string) (int64, error) {
 	if strings.Contains(s, ".") {
 		f, err := strconv.ParseFloat(s, 64)

@@ -7,19 +7,21 @@ import (
 
 type UserRepo interface {
 	Upsert(ctx context.Context, user *User) error
+	GetLang(ctx context.Context, userID int64) (string, error)
+	SetLang(ctx context.Context, userID int64, lang string) error
 }
 
 type CustomerRepo interface {
 	FindOrCreate(ctx context.Context, userID int64, name string) (*Customer, error)
 	ListByUser(ctx context.Context, userID int64) ([]Customer, error)
-	GetByID(ctx context.Context, id int64) (*Customer, error)
-	UpdateBalance(ctx context.Context, id int64, delta int64) error
+	GetByID(ctx context.Context, userID, id int64) (*Customer, error)
+	UpdateBalance(ctx context.Context, userID, id int64, delta int64) error
 }
 
 type ProductRepo interface {
 	FindOrCreate(ctx context.Context, userID int64, name string, price int64) (*Product, error)
 	ListByUser(ctx context.Context, userID int64) ([]Product, error)
-	GetByID(ctx context.Context, id int64) (*Product, error)
+	GetByID(ctx context.Context, userID, id int64) (*Product, error)
 }
 
 type TransactionRepo interface {

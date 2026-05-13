@@ -2,9 +2,11 @@ package bot
 
 import (
 	"log"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/nathanim1919/mezgeb/internal/bot/handler"
+	"github.com/nathanim1919/mezgeb/internal/bot/ratelimit"
 	"github.com/nathanim1919/mezgeb/internal/bot/state"
 	"github.com/nathanim1919/mezgeb/internal/service"
 )
@@ -23,7 +25,8 @@ func New(token string, svc *service.Service) (*Bot, error) {
 	log.Printf("Authorized on account %s", api.Self.UserName)
 
 	stateMgr := state.NewManager()
-	h := handler.New(api, svc, stateMgr)
+	limiter := ratelimit.New(30, time.Minute) // 30 messages per minute per user
+	h := handler.New(api, svc, stateMgr, limiter)
 
 	return &Bot{api: api, handler: h}, nil
 }

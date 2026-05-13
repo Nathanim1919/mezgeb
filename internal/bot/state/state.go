@@ -22,6 +22,10 @@ const (
 	// Product flow
 	StepProductName
 	StepProductPrice
+
+	// Settings flow
+	StepSettingsMenu
+	StepSettingsLang
 )
 
 // Conversation holds the in-progress state for one user.

@@ -52,12 +52,12 @@ func (r *ProductRepo) ListByUser(ctx context.Context, userID int64) ([]domain.Pr
 	return products, nil
 }
 
-func (r *ProductRepo) GetByID(ctx context.Context, id int64) (*domain.Product, error) {
+func (r *ProductRepo) GetByID(ctx context.Context, userID, id int64) (*domain.Product, error) {
 	var p domain.Product
 	err := r.pool.QueryRow(ctx, `
 		SELECT id, user_id, name, price, created_at
-		FROM products WHERE id = $1
-	`, id).Scan(&p.ID, &p.UserID, &p.Name, &p.Price, &p.CreatedAt)
+		FROM products WHERE id = $1 AND user_id = $2
+	`, id, userID).Scan(&p.ID, &p.UserID, &p.Name, &p.Price, &p.CreatedAt)
 	if err != nil {
 		return nil, err
 	}

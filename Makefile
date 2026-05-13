@@ -1,6 +1,7 @@
 .PHONY: run build migrate-up migrate-down docker-up docker-down
 
-DATABASE_URL ?= postgres://mezgeb:mezgeb@localhost:5432/mezgeb?sslmode=disable
+DATABASE_URL ?= postgres://postgres:postgres@localhost:5432/mezgeb?sslmode=disable
+MIGRATE ?= $(shell go env GOPATH)/bin/migrate
 
 run:
 	go run ./cmd/bot
@@ -18,10 +19,10 @@ docker-down:
 	docker compose down
 
 migrate-up:
-	migrate -database "$(DATABASE_URL)" -path migrations up
+	$(MIGRATE) -database "$(DATABASE_URL)" -path migrations up
 
 migrate-down:
-	migrate -database "$(DATABASE_URL)" -path migrations down 1
+	$(MIGRATE) -database "$(DATABASE_URL)" -path migrations down 1
 
 migrate-create:
-	migrate create -ext sql -dir migrations -seq $(name)
+	$(MIGRATE) create -ext sql -dir migrations -seq $(name)

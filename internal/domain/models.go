@@ -10,6 +10,7 @@ type User struct {
 	FirstName    string
 	Username     string
 	LanguageCode string
+	Lang         string // "am" or "en"
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -56,11 +57,14 @@ type Transaction struct {
 }
 
 // FormatBirr converts cents to a human-readable birr string.
-func FormatBirr(cents int64) string {
+func FormatBirr(cents int64, label string) string {
 	whole := cents / 100
 	frac := cents % 100
-	if frac == 0 {
-		return fmt.Sprintf("%d birr", whole)
+	if label == "" {
+		label = "ብር"
 	}
-	return fmt.Sprintf("%d.%02d birr", whole, frac)
+	if frac == 0 {
+		return fmt.Sprintf("%d %s", whole, label)
+	}
+	return fmt.Sprintf("%d.%02d %s", whole, frac, label)
 }

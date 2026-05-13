@@ -14,18 +14,20 @@ CREATE TABLE IF NOT EXISTS customers (
     phone      TEXT NOT NULL DEFAULT '',
     balance    BIGINT NOT NULL DEFAULT 0,  -- in cents (birr * 100), positive = they owe you
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE(user_id, LOWER(name))
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE UNIQUE INDEX idx_customers_user_name ON customers(user_id, LOWER(name));
 
 CREATE TABLE IF NOT EXISTS products (
     id         BIGSERIAL PRIMARY KEY,
     user_id    BIGINT NOT NULL REFERENCES users(id),
     name       TEXT NOT NULL,
     price      BIGINT NOT NULL DEFAULT 0,  -- default price in cents
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE(user_id, LOWER(name))
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE UNIQUE INDEX idx_products_user_name ON products(user_id, LOWER(name));
 
 -- Transaction types: 'debt' (they owe you), 'payment' (they paid you), 'purchase' (they bought something)
 CREATE TABLE IF NOT EXISTS transactions (
