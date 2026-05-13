@@ -72,3 +72,7 @@ func (s *Service) GetLang(ctx context.Context, userID int64) (string, error) {
 func (s *Service) SetLang(ctx context.Context, userID int64, lang string) error {
 	return s.Users.SetLang(ctx, userID, lang)
 }
+
+func (s *Service) ClearData(ctx context.Context, userID int64) error {
+	return s.Users.ClearData(ctx, userID)
+}

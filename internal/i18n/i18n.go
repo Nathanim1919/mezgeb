@@ -143,10 +143,14 @@ type Messages struct {
 	ProductLowStock  string // "⚠️ Low"
 
 	// Settings
-	SettingsTitle    string
-	BtnLanguage      string
-	ChooseLanguage   string
-	LanguageUpdated  string
+	SettingsTitle     string
+	BtnLanguage       string
+	BtnClearData      string
+	ChooseLanguage    string
+	LanguageUpdated   string
+	ClearDataWarning  string
+	BtnConfirmClear   string
+	ClearDataSuccess  string
 
 	// General
 	NotUnderstood    string
@@ -282,10 +286,14 @@ func amharic() *Messages {
 		ProductStock:     "ክምችት: %d",
 		ProductLowStock:  "⚠️ ዝቅተኛ",
 
-		SettingsTitle:    "⚙️ *ማስተካከያ*",
-		BtnLanguage:      "🌍 ቋንቋ",
-		ChooseLanguage:   "🌍 ቋንቋ ይምረጡ:",
-		LanguageUpdated:  "✅ ቋንቋ ተቀይሯል!",
+		SettingsTitle:     "⚙️ *ማስተካከያ*",
+		BtnLanguage:       "🌍 ቋንቋ",
+		BtnClearData:      "🗑 ሁሉንም ደልት",
+		ChooseLanguage:    "🌍 ቋንቋ ይምረጡ:",
+		LanguageUpdated:   "✅ ቋንቋ ተቀይሯል!",
+		ClearDataWarning:  "⚠️ *እርግጠኛ ነዎት?*\n\nይህ ሁሉንም ግብይቶች፣ ደንበኞች፣ እና ምርቶች በቋሚነት ይሰርዛል።\n\n*ይህ ሊቀለበስ አይችልም!*",
+		BtnConfirmClear:   "🗑 አዎ፣ ሁሉንም ሰርዝ",
+		ClearDataSuccess:  "✅ ሁሉም መረጃ ተሰርዟል። እንደ አዲስ መጀመር ይችላሉ!",
 
 		NotUnderstood:    "ይቅርታ፣ አልገባኝም። ከታች ያለውን ሜኒው ይጠቀሙ 👇",
 		ErrorGeneric:     "❌ ችግር ተፈጥሯል። እባክዎ ደግመው ይሞክሩ።",
@@ -407,10 +415,14 @@ func english() *Messages {
 		ProductStock:     "Stock: %d",
 		ProductLowStock:  "⚠️ Low",
 
-		SettingsTitle:    "⚙️ *Settings*",
-		BtnLanguage:      "🌍 Language",
-		ChooseLanguage:   "🌍 Choose language:",
-		LanguageUpdated:  "✅ Language updated!",
+		SettingsTitle:     "⚙️ *Settings*",
+		BtnLanguage:       "🌍 Language",
+		BtnClearData:      "🗑 Clear All Data",
+		ChooseLanguage:    "🌍 Choose language:",
+		LanguageUpdated:   "✅ Language updated!",
+		ClearDataWarning:  "⚠️ *Are you sure?*\n\nThis will permanently delete all your transactions, customers, and products.\n\n*This cannot be undone!*",
+		BtnConfirmClear:   "🗑 Yes, delete everything",
+		ClearDataSuccess:  "✅ All data has been cleared. You can start fresh!",
 
 		NotUnderstood:    "I didn't understand that. Use the menu below 👇",
 		ErrorGeneric:     "❌ Something went wrong. Please try again.",

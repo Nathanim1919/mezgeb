@@ -9,6 +9,7 @@ type UserRepo interface {
 	Upsert(ctx context.Context, user *User) error
 	GetLang(ctx context.Context, userID int64) (string, error)
 	SetLang(ctx context.Context, userID int64, lang string) error
+	ClearData(ctx context.Context, userID int64) error
 }
 
 type CustomerRepo interface {

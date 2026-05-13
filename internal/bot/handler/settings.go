@@ -21,6 +21,10 @@ func (h *Handler) handleSettingsMenu(ctx context.Context, msg *tgbotapi.Message,
 		conv.Step = state.StepSettingsLang
 		h.state.Set(msg.From.ID, conv)
 		h.sendWithKeyboard(msg.Chat.ID, m.ChooseLanguage, keyboard.LanguageChoice())
+	case m.BtnClearData:
+		conv.Step = state.StepClearDataConfirm
+		h.state.Set(msg.From.ID, conv)
+		h.sendWithKeyboard(msg.Chat.ID, m.ClearDataWarning, keyboard.ClearDataConfirm(m))
 	default:
 		h.send(msg.Chat.ID, m.InvalidChoice)
 	}
@@ -49,4 +53,22 @@ func (h *Handler) handleSettingsLang(ctx context.Context, msg *tgbotapi.Message,
 	// Use the NEW language for the confirmation
 	newM := i18n.Get(lang)
 	h.sendWithKeyboard(msg.Chat.ID, newM.LanguageUpdated, keyboard.MainMenu(newM))
+}
+
+func (h *Handler) handleClearDataConfirm(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	if msg.Text != m.BtnConfirmClear {
+		// Any other text (including cancel) = abort
+		h.state.Reset(msg.From.ID)
+		h.sendWithKeyboard(msg.Chat.ID, m.MainMenuPrompt, keyboard.MainMenu(m))
+		return
+	}
+
+	if err := h.svc.ClearData(ctx, msg.From.ID); err != nil {
+		h.send(msg.Chat.ID, m.ErrorGeneric)
+		h.state.Reset(msg.From.ID)
+		return
+	}
+
+	h.state.Reset(msg.From.ID)
+	h.sendWithKeyboard(msg.Chat.ID, m.ClearDataSuccess, keyboard.MainMenu(m))
 }

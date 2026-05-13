@@ -63,6 +63,7 @@ const (
 	// Settings flow
 	StepSettingsMenu
 	StepSettingsLang
+	StepClearDataConfirm
 )
 
 // Conversation holds the in-progress state for one user.

@@ -147,6 +147,20 @@ func Settings(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 			tgbotapi.NewKeyboardButton(m.BtnLanguage),
 		),
 		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnClearData),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
+func ClearDataConfirm(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnConfirmClear),
+		),
+		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton(m.BtnCancel),
 		),
 	)

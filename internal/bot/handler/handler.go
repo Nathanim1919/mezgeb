@@ -177,6 +177,8 @@ func (h *Handler) handleConversation(ctx context.Context, msg *tgbotapi.Message,
 		h.handleSettingsMenu(ctx, msg, conv, m)
 	case state.StepSettingsLang:
 		h.handleSettingsLang(ctx, msg, conv, m)
+	case state.StepClearDataConfirm:
+		h.handleClearDataConfirm(ctx, msg, conv, m)
 	}
 }
 
