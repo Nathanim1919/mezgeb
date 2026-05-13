@@ -19,21 +19,25 @@ type CustomerRepo interface {
 }
 
 type ProductRepo interface {
-	FindOrCreate(ctx context.Context, userID int64, name string, price int64) (*Product, error)
+	FindOrCreate(ctx context.Context, userID int64, name string, price int64, stock int64) (*Product, error)
 	ListByUser(ctx context.Context, userID int64) ([]Product, error)
 	GetByID(ctx context.Context, userID, id int64) (*Product, error)
 }
 
 type TransactionRepo interface {
-	// CreateWithBalanceUpdate atomically creates a transaction and updates the customer balance.
-	CreateWithBalanceUpdate(ctx context.Context, tx *Transaction, balanceDelta int64) error
+	// CreateWithBalanceUpdate atomically creates a transaction, updates customer balance and product stock.
+	CreateWithBalanceUpdate(ctx context.Context, tx *Transaction, balanceDelta int64, stockDelta int64) error
 	ListByUser(ctx context.Context, userID int64, from, to time.Time) ([]Transaction, error)
 }
 
 type ReportData struct {
 	TotalTransactions int
-	TotalRevenue      int64 // payments + purchases
+	TotalSales        int64 // money in from sell transactions
+	TotalExpenses     int64 // money out from buy transactions
+	TotalRevenue      int64 // legacy: payments + purchases
 	TotalDebt         int64 // new debt added
+	ItemsSold         int64 // total quantity sold
+	ItemsBought       int64 // total quantity bought
 	TopProducts       []ProductStat
 }
 

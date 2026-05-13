@@ -32,7 +32,38 @@ type Messages struct {
 	BtnProducts      string
 	BtnSettings      string
 
-	// Transaction flow
+	// Transaction menu
+	TxMenuTitle      string
+	BtnSell          string
+	BtnBuy           string
+	BtnBorrow        string
+	BtnLoan          string
+	ComingSoon       string
+
+	// Sell/Buy flow
+	AskSellProduct   string
+	AskBuyProduct    string
+	BtnNewProduct    string
+	AskQuantity      string
+	AskBuyPrice      string
+	InvalidQuantity  string
+	NotEnoughStock   string // "Not enough stock! You have %d"
+	BtnChangeProduct string
+	BtnSellAll       string
+	TxSummaryTitle   string
+	TxSummaryNote    string
+	TxSummaryProduct string
+	TxSummaryQty     string
+	TxSummaryUnitPrice string
+	TxSummaryTotal   string
+	TxSummaryType    string
+	TxSummaryConfirm string
+	SellConfirm      string // "✅ Sold %d × %s for %s"
+	BuyConfirm       string // "✅ Bought %d × %s for %s"
+	TxConfirmGeneric string
+	TxFailed         string
+
+	// Legacy transaction flow (debt/payment — for borrow/loan later)
 	AskCustomerName  string
 	AskTxType        string
 	BtnOwesMe        string
@@ -44,18 +75,11 @@ type Messages struct {
 	BtnCancel        string
 	BtnConfirm       string
 	AskNote          string
-	TxSummaryTitle   string
-	TxSummaryNote    string
 	TxSummaryCustomer string
-	TxSummaryType    string
 	TxSummaryAmount  string
-	TxSummaryProduct string
-	TxSummaryConfirm string
-	TxConfirmDebt    string // "✅ %s now owes you %s"
-	TxConfirmPayment string // "✅ Recorded %s payment from %s"
-	TxConfirmPurchase string // "✅ %s bought %s for %s"
-	TxConfirmGeneric string
-	TxFailed         string
+	TxConfirmDebt    string
+	TxConfirmPayment string
+	TxConfirmPurchase string
 	InvalidAmount    string
 	AmountTooLarge   string
 	InvalidChoice    string
@@ -64,17 +88,22 @@ type Messages struct {
 	ProductError     string
 
 	// Reports
-	ReportChoose     string
-	BtnToday         string
-	BtnThisWeek      string
-	BtnThisMonth     string
-	ReportTitle      string
-	ReportTx         string
-	ReportRevenue    string
-	ReportDebt       string
+	ReportChoose      string
+	BtnToday          string
+	BtnThisWeek       string
+	BtnThisMonth      string
+	ReportTitle       string
+	ReportTx          string
+	ReportSales       string
+	ReportExpenses    string
+	ReportProfit      string
+	ReportItemsSold   string
+	ReportItemsBought string
+	ReportRevenue     string
+	ReportDebt        string
 	ReportTopProducts string
-	ReportNoTx       string
-	ReportError      string
+	ReportNoTx        string
+	ReportError       string
 
 	// Customers
 	CustomersTitle   string
@@ -87,11 +116,18 @@ type Messages struct {
 	// Products
 	ProductsTitle    string
 	ProductsEmpty    string
+	BtnAddProduct    string
+	BtnListProducts  string
+	ProductMenuTitle string
 	ProductAskName   string
 	ProductAskPrice  string
+	ProductAskStock  string
 	ProductSaved     string
 	ProductError2    string
 	InvalidPrice     string
+	InvalidStock     string
+	ProductStock     string // "Stock: %d"
+	ProductLowStock  string // "⚠️ Low"
 
 	// Settings
 	SettingsTitle    string
@@ -124,11 +160,40 @@ func amharic() *Messages {
 	return &Messages{
 		Welcome:          "እንኳን ወደ መዝገብ በደህና መጡ! 📒\n\nቀላል የንግድ ረዳትዎ።\nምን ማድረግ ይፈልጋሉ?",
 		MainMenuPrompt:   "ምን ማድረግ ይፈልጋሉ?",
-		BtnAddTx:         "➕ ግብይት ጨምር",
+		BtnAddTx:         "💰 ግብይቶች",
 		BtnReports:       "📊 ሪፖርት",
 		BtnCustomers:     "👥 ደንበኞች",
 		BtnProducts:      "📦 ምርቶች",
 		BtnSettings:      "⚙️ ማስተካከያ",
+
+		TxMenuTitle:      "💰 *ግብይቶች*\n\nምን ማድረግ ይፈልጋሉ?",
+		BtnSell:          "🛒 ሽያጭ",
+		BtnBuy:           "📥 ግዢ",
+		BtnBorrow:        "🤝 ብድር",
+		BtnLoan:          "💸 አበድር",
+		ComingSoon:       "🔜 በቅርቡ ይመጣል!",
+
+		AskSellProduct:   "🛒 የትኛውን ምርት ይሸጣሉ?",
+		AskBuyProduct:    "📥 የትኛውን ምርት ይገዛሉ?",
+		BtnNewProduct:    "➕ አዲስ ምርት",
+		AskQuantity:      "🔢 ስንት? (ብዛት)",
+		AskBuyPrice:      "💰 የግዢ ዋጋ ለአንዱ? (በብር)",
+		InvalidQuantity:  "እባክዎ ትክክለኛ ቁጥር ያስገቡ። ምሳሌ: `5`",
+		NotEnoughStock:   "⚠️ ክምችት በቂ አይደለም! ያለዎት: *%d*\n\nሌላ ቁጥር ያስገቡ፣ ሁሉንም ይሸጡ፣ ወይም ሌላ ምርት ይምረጡ 👇",
+		BtnChangeProduct: "🔄 ሌላ ምርት",
+		BtnSellAll:       "📦 ሁሉንም ሽጥ",
+		TxSummaryTitle:   "📋 *የግብይት ማጠቃለያ*",
+		TxSummaryNote:    "📝 ማስታወሻ: *%s*",
+		TxSummaryProduct: "📦 ምርት: *%s*",
+		TxSummaryQty:     "🔢 ብዛት: *%d*",
+		TxSummaryUnitPrice: "💰 ዋጋ/አንድ: *%s*",
+		TxSummaryTotal:   "💵 ጠቅላላ: *%s*",
+		TxSummaryType:    "📝 አይነት: *%s*",
+		TxSummaryConfirm: "ያረጋግጡ?",
+		SellConfirm:      "✅ *%d* × *%s* ተሽጧል በ *%s*",
+		BuyConfirm:       "✅ *%d* × *%s* ተገዝቷል በ *%s*",
+		TxConfirmGeneric: "✅ ግብይት ተመዝግቧል!",
+		TxFailed:         "❌ ግብይቱን ማስቀመጥ አልተቻለም። እባክዎ ደግመው ይሞክሩ።",
 
 		AskCustomerName:  "👤 የደንበኛ ስም?",
 		AskTxType:        "ተቀብሏል! *%s*\n\nየግብይት አይነት?",
@@ -141,18 +206,11 @@ func amharic() *Messages {
 		BtnCancel:        "❌ ሰርዝ",
 		BtnConfirm:       "✅ አረጋግጥ",
 		AskNote:          "📝 ማስታወሻ? (ወይም ዝለል)\nምሳሌ: ለ3 ኪሎ ስኳር",
-		TxSummaryTitle:   "📋 *የግብይት ማጠቃለያ*",
-		TxSummaryNote:    "📝 ማስታወሻ: *%s*",
 		TxSummaryCustomer: "👤 ደንበኛ: *%s*",
-		TxSummaryType:    "📝 አይነት: *%s*",
 		TxSummaryAmount:  "💰 መጠን: *%s*",
-		TxSummaryProduct: "📦 ምርት: *%s*",
-		TxSummaryConfirm: "ያረጋግጡ?",
 		TxConfirmDebt:    "✅ *%s* *%s* ይበደርዎታል",
 		TxConfirmPayment: "✅ *%s* ከ *%s* ክፍያ ተመዝግቧል",
 		TxConfirmPurchase: "✅ *%s* *%s* ገዝቷል በ *%s*",
-		TxConfirmGeneric: "✅ ግብይት ተመዝግቧል!",
-		TxFailed:         "❌ ግብይቱን ማስቀመጥ አልተቻለም። እባክዎ ደግመው ይሞክሩ።",
 		InvalidAmount:    "እባክዎ ትክክለኛ መጠን ያስገቡ።\nምሳሌ: `1500`፣ `250.50`",
 		AmountTooLarge:   "⚠️ ከፍተኛ መጠን 10,000,000 ብር ነው።",
 		InvalidChoice:    "እባክዎ ከታች ያሉትን ቁልፎች ይጠቀሙ 👇",
@@ -160,17 +218,22 @@ func amharic() *Messages {
 		NameTooLong:      "⚠️ ስሙ በጣም ረጅም ነው። እባክዎ ያሳጥሩት።",
 		ProductError:     "❌ ከምርቱ ጋር ችግር ተፈጥሯል። እየዘለልን ነው።",
 
-		ReportChoose:     "📊 ጊዜ ይምረጡ:",
-		BtnToday:         "📅 ዛሬ",
-		BtnThisWeek:      "📆 በዚህ ሳምንት",
-		BtnThisMonth:     "🗓 በዚህ ወር",
-		ReportTitle:      "📊 *ሪፖርት — %s*",
-		ReportTx:         "📝 ግብይቶች: *%d*",
-		ReportRevenue:    "💰 ገቢ: *%s*",
-		ReportDebt:       "💸 አዲስ ብድር: *%s*",
-		ReportTopProducts: "📦 *ምርጥ ምርቶች:*",
-		ReportNoTx:       "_በዚህ ጊዜ ውስጥ ግብይት የለም።_",
-		ReportError:      "❌ ሪፖርት ማዘጋጀት አልተቻለም።",
+		ReportChoose:      "📊 ጊዜ ይምረጡ:",
+		BtnToday:          "📅 ዛሬ",
+		BtnThisWeek:       "📆 በዚህ ሳምንት",
+		BtnThisMonth:      "🗓 በዚህ ወር",
+		ReportTitle:       "📊 *ሪፖርት — %s*",
+		ReportTx:          "📝 ግብይቶች: *%d*",
+		ReportSales:       "🛒 ሽያጭ: *%s*",
+		ReportExpenses:    "📥 ወጪ (ግዢ): *%s*",
+		ReportProfit:      "📈 ትርፍ: *%s*",
+		ReportItemsSold:   "📦 የተሸጡ ምርቶች: *%d*",
+		ReportItemsBought: "📦 የተገዙ ምርቶች: *%d*",
+		ReportRevenue:     "💰 ክፍያዎች: *%s*",
+		ReportDebt:        "💸 አዲስ ብድር: *%s*",
+		ReportTopProducts: "🏆 *ምርጥ የተሸጡ ምርቶች:*",
+		ReportNoTx:        "_በዚህ ጊዜ ውስጥ ግብይት የለም።_",
+		ReportError:       "❌ ሪፖርት ማዘጋጀት አልተቻለም።",
 
 		CustomersTitle:   "👥 *ደንበኞችዎ*",
 		CustomersEmpty:   "👥 እስካሁን ደንበኛ የለም።\n\nየመጀመሪያ ግብይትዎን ያስገቡ ደንበኛ ለመፍጠር!",
@@ -181,11 +244,18 @@ func amharic() *Messages {
 
 		ProductsTitle:    "📦 *ምርቶችዎ*",
 		ProductsEmpty:    "_እስካሁን ምርት የለም።_",
-		ProductAskName:   "ምርት ለመጨመር ስሙን ይጻፉ ወይም ከሜኒው ይምረጡ።",
+		BtnAddProduct:    "➕ ምርት ጨምር",
+		BtnListProducts:  "📋 ምርቶች ዝርዝር",
+		ProductMenuTitle: "📦 *ምርቶች*\n\nምን ማድረግ ይፈልጋሉ?",
+		ProductAskName:   "📦 የምርት ስም?",
 		ProductAskPrice:  "💰 ለ *%s* ዋጋ? (በብር)",
-		ProductSaved:     "✅ ምርት *%s* በ *%s* ተቀምጧል",
+		ProductAskStock:  "📊 የ *%s* ክምችት ብዛት?",
+		ProductSaved:     "✅ ምርት *%s* በ *%s* ተቀምጧል\n📊 ክምችት: *%d*",
 		ProductError2:    "❌ ምርቱን ማስቀመጥ አልተቻለም።",
 		InvalidPrice:     "እባክዎ ትክክለኛ ዋጋ ያስገቡ። ምሳሌ: `500`",
+		InvalidStock:     "እባክዎ ትክክለኛ ቁጥር ያስገቡ። ምሳሌ: `50`",
+		ProductStock:     "ክምችት: %d",
+		ProductLowStock:  "⚠️ ዝቅተኛ",
 
 		SettingsTitle:    "⚙️ *ማስተካከያ*",
 		BtnLanguage:      "🌍 ቋንቋ",
@@ -203,11 +273,40 @@ func english() *Messages {
 	return &Messages{
 		Welcome:          "Welcome to Mezgeb! 📒\n\nYour simple business assistant.\nWhat would you like to do?",
 		MainMenuPrompt:   "What would you like to do?",
-		BtnAddTx:         "➕ Add Transaction",
+		BtnAddTx:         "💰 Transactions",
 		BtnReports:       "📊 Reports",
 		BtnCustomers:     "👥 Customers",
 		BtnProducts:      "📦 Products",
 		BtnSettings:      "⚙️ Settings",
+
+		TxMenuTitle:      "💰 *Transactions*\n\nWhat would you like to do?",
+		BtnSell:          "🛒 Sell",
+		BtnBuy:           "📥 Buy",
+		BtnBorrow:        "🤝 Borrow",
+		BtnLoan:          "💸 Loan",
+		ComingSoon:       "🔜 Coming soon!",
+
+		AskSellProduct:   "🛒 Which product are you selling?",
+		AskBuyProduct:    "📥 Which product are you buying?",
+		BtnNewProduct:    "➕ New Product",
+		AskQuantity:      "🔢 How many? (quantity)",
+		AskBuyPrice:      "💰 Buy price per unit? (in birr)",
+		InvalidQuantity:  "Please enter a valid number. Example: `5`",
+		NotEnoughStock:   "⚠️ Not enough stock! You have: *%d*\n\nEnter a different number, sell all, or pick another product 👇",
+		BtnChangeProduct: "🔄 Other Product",
+		BtnSellAll:       "📦 Sell All",
+		TxSummaryTitle:   "📋 *Transaction Summary*",
+		TxSummaryNote:    "📝 Note: *%s*",
+		TxSummaryProduct: "📦 Product: *%s*",
+		TxSummaryQty:     "🔢 Quantity: *%d*",
+		TxSummaryUnitPrice: "💰 Price/unit: *%s*",
+		TxSummaryTotal:   "💵 Total: *%s*",
+		TxSummaryType:    "📝 Type: *%s*",
+		TxSummaryConfirm: "Confirm?",
+		SellConfirm:      "✅ Sold *%d* × *%s* for *%s*",
+		BuyConfirm:       "✅ Bought *%d* × *%s* for *%s*",
+		TxConfirmGeneric: "✅ Transaction recorded!",
+		TxFailed:         "❌ Failed to save transaction. Please try again.",
 
 		AskCustomerName:  "👤 Customer name?",
 		AskTxType:        "Got it! *%s*\n\nWhat type of transaction?",
@@ -220,18 +319,11 @@ func english() *Messages {
 		BtnCancel:        "❌ Cancel",
 		BtnConfirm:       "✅ Confirm",
 		AskNote:          "📝 Add a note? (or skip)\nExample: for 3kg sugar",
-		TxSummaryTitle:   "📋 *Transaction Summary*",
-		TxSummaryNote:    "📝 Note: *%s*",
 		TxSummaryCustomer: "👤 Customer: *%s*",
-		TxSummaryType:    "📝 Type: *%s*",
 		TxSummaryAmount:  "💰 Amount: *%s*",
-		TxSummaryProduct: "📦 Product: *%s*",
-		TxSummaryConfirm: "Confirm?",
 		TxConfirmDebt:    "✅ *%s* now owes you *%s*",
 		TxConfirmPayment: "✅ Recorded *%s* payment from *%s*",
 		TxConfirmPurchase: "✅ *%s* bought *%s* for *%s*",
-		TxConfirmGeneric: "✅ Transaction recorded!",
-		TxFailed:         "❌ Failed to save transaction. Please try again.",
 		InvalidAmount:    "Please enter a valid amount.\nExamples: `1500`, `250.50`",
 		AmountTooLarge:   "⚠️ Maximum amount is 10,000,000 birr.",
 		InvalidChoice:    "Please choose from the buttons below 👇",
@@ -239,17 +331,22 @@ func english() *Messages {
 		NameTooLong:      "⚠️ Name is too long. Please shorten it.",
 		ProductError:     "❌ Error with product. Skipping.",
 
-		ReportChoose:     "📊 Choose a time period:",
-		BtnToday:         "📅 Today",
-		BtnThisWeek:      "📆 This Week",
-		BtnThisMonth:     "🗓 This Month",
-		ReportTitle:      "📊 *Report — %s*",
-		ReportTx:         "📝 Transactions: *%d*",
-		ReportRevenue:    "💰 Revenue: *%s*",
-		ReportDebt:       "💸 New Debt: *%s*",
-		ReportTopProducts: "📦 *Top Products:*",
-		ReportNoTx:       "_No transactions in this period._",
-		ReportError:      "❌ Error generating report.",
+		ReportChoose:      "📊 Choose a time period:",
+		BtnToday:          "📅 Today",
+		BtnThisWeek:       "📆 This Week",
+		BtnThisMonth:      "🗓 This Month",
+		ReportTitle:       "📊 *Report — %s*",
+		ReportTx:          "📝 Transactions: *%d*",
+		ReportSales:       "🛒 Sales: *%s*",
+		ReportExpenses:    "📥 Expenses (Purchases): *%s*",
+		ReportProfit:      "📈 Profit: *%s*",
+		ReportItemsSold:   "📦 Items Sold: *%d*",
+		ReportItemsBought: "📦 Items Bought: *%d*",
+		ReportRevenue:     "💰 Payments: *%s*",
+		ReportDebt:        "💸 New Debt: *%s*",
+		ReportTopProducts: "🏆 *Top Sold Products:*",
+		ReportNoTx:        "_No transactions in this period._",
+		ReportError:       "❌ Error generating report.",
 
 		CustomersTitle:   "👥 *Your Customers*",
 		CustomersEmpty:   "👥 No customers yet.\n\nAdd your first transaction to create a customer!",
@@ -260,11 +357,18 @@ func english() *Messages {
 
 		ProductsTitle:    "📦 *Your Products*",
 		ProductsEmpty:    "_No products yet._",
-		ProductAskName:   "To add a product, type its name below or tap a menu button.",
-		ProductAskPrice:  "💰 Default price for *%s*? (in birr)",
-		ProductSaved:     "✅ Product *%s* saved at *%s*",
+		BtnAddProduct:    "➕ Add Product",
+		BtnListProducts:  "📋 List Products",
+		ProductMenuTitle: "📦 *Products*\n\nWhat would you like to do?",
+		ProductAskName:   "📦 Product name?",
+		ProductAskPrice:  "💰 Price for *%s*? (in birr)",
+		ProductAskStock:  "📊 Stock quantity for *%s*?",
+		ProductSaved:     "✅ Product *%s* saved at *%s*\n📊 Stock: *%d*",
 		ProductError2:    "❌ Error saving product.",
 		InvalidPrice:     "Please enter a valid price. Example: `500`",
+		InvalidStock:     "Please enter a valid number. Example: `50`",
+		ProductStock:     "Stock: %d",
+		ProductLowStock:  "⚠️ Low",
 
 		SettingsTitle:    "⚙️ *Settings*",
 		BtnLanguage:      "🌍 Language",

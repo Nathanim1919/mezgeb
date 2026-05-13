@@ -30,7 +30,9 @@ type Product struct {
 	UserID    int64
 	Name      string
 	Price     int64 // default price in cents
+	Stock     int64 // current stock quantity
 	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type TransactionType string
@@ -39,15 +41,18 @@ const (
 	TxDebt     TransactionType = "debt"
 	TxPayment  TransactionType = "payment"
 	TxPurchase TransactionType = "purchase"
+	TxSell     TransactionType = "sell"
+	TxBuy      TransactionType = "buy"
 )
 
 type Transaction struct {
 	ID         int64
 	UserID     int64
-	CustomerID int64
+	CustomerID *int64 // nullable — sell/buy don't require a customer
 	ProductID  *int64
 	Type       TransactionType
 	Amount     int64 // always positive, in cents
+	Quantity   int64 // number of items
 	Note       string
 	CreatedAt  time.Time
 

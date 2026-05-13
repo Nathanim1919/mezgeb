@@ -21,6 +21,22 @@ func MainMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	)
 }
 
+func TransactionMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnSell),
+			tgbotapi.NewKeyboardButton(m.BtnBuy),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnBorrow),
+			tgbotapi.NewKeyboardButton(m.BtnLoan),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
 func TransactionType(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
@@ -46,6 +62,32 @@ func ProductChoice(m *i18n.Messages, products []string) tgbotapi.ReplyKeyboardMa
 		tgbotapi.NewKeyboardButton(m.BtnCancel),
 	))
 	return tgbotapi.NewReplyKeyboard(rows...)
+}
+
+func ProductChoiceWithNew(m *i18n.Messages, products []string) tgbotapi.ReplyKeyboardMarkup {
+	var rows [][]tgbotapi.KeyboardButton
+	for _, p := range products {
+		rows = append(rows, tgbotapi.NewKeyboardButtonRow(tgbotapi.NewKeyboardButton(p)))
+	}
+	rows = append(rows, tgbotapi.NewKeyboardButtonRow(
+		tgbotapi.NewKeyboardButton(m.BtnNewProduct),
+	))
+	rows = append(rows, tgbotapi.NewKeyboardButtonRow(
+		tgbotapi.NewKeyboardButton(m.BtnCancel),
+	))
+	return tgbotapi.NewReplyKeyboard(rows...)
+}
+
+func NotEnoughStock(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnSellAll),
+			tgbotapi.NewKeyboardButton(m.BtnChangeProduct),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
 }
 
 func Confirm(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
@@ -82,6 +124,18 @@ func SkipCancel(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton(m.BtnSkip),
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
+func ProductMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnAddProduct),
+			tgbotapi.NewKeyboardButton(m.BtnListProducts),
+		),
+		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton(m.BtnCancel),
 		),
 	)

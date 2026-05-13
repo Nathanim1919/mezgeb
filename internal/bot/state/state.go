@@ -12,7 +12,28 @@ type Step int
 const (
 	StepIdle Step = iota
 
-	// Add Transaction flow
+	// Transaction menu
+	StepTxMenu
+
+	// Sell flow: product → quantity → note → confirm
+	StepSellProduct        // choose existing or "new product"
+	StepSellNewName        // new product: name
+	StepSellNewPrice       // new product: price
+	StepSellNewStock       // new product: initial stock
+	StepSellQuantity       // how many items to sell
+	StepSellNote           // optional note
+	StepSellConfirm        // confirm
+
+	// Buy flow: product → price → quantity → note → confirm
+	StepBuyProduct         // choose existing or "new product"
+	StepBuyNewName         // new product: name
+	StepBuyNewPrice        // new product: price
+	StepBuyPrice           // buy price per unit (existing product)
+	StepBuyQuantity        // how many items to buy
+	StepBuyNote            // optional note
+	StepBuyConfirm         // confirm
+
+	// Legacy debt/payment flow (borrow/loan — coming later)
 	StepTxCustomerName
 	StepTxType
 	StepTxAmount
@@ -21,8 +42,10 @@ const (
 	StepTxConfirm
 
 	// Product flow
+	StepProductMenu
 	StepProductName
 	StepProductPrice
+	StepProductStock
 
 	// Settings flow
 	StepSettingsMenu
@@ -31,14 +54,18 @@ const (
 
 // Conversation holds the in-progress state for one user.
 type Conversation struct {
-	Step       Step
-	CustomerID int64
-	Customer   string
-	TxType     domain.TransactionType
-	Amount     int64
-	ProductID  *int64
-	Product    string
-	Note       string
+	Step         Step
+	CustomerID   int64
+	Customer     string
+	TxType       domain.TransactionType
+	Amount       int64   // total amount in cents
+	Quantity     int64   // number of items
+	UnitPrice    int64   // price per unit in cents
+	ProductID    *int64
+	Product      string
+	Note         string
+	ProductPrice int64   // used in product-add flow
+	ProductStock int64   // used in product-add flow
 }
 
 // Manager is a thread-safe in-memory conversation state store.

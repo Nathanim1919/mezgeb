@@ -50,19 +50,43 @@ func (h *Handler) handleReportPeriod(ctx context.Context, msg *tgbotapi.Message,
 
 func formatReport(period string, r *domain.ReportData, m *i18n.Messages) string {
 	s := fmt.Sprintf(m.ReportTitle, period) + "\n\n"
-	s += fmt.Sprintf(m.ReportTx, r.TotalTransactions) + "\n"
-	s += fmt.Sprintf(m.ReportRevenue, domain.FormatBirr(r.TotalRevenue, m.Birr)) + "\n"
-	s += fmt.Sprintf(m.ReportDebt, domain.FormatBirr(r.TotalDebt, m.Birr)) + "\n"
 
+	if r.TotalTransactions == 0 {
+		s += m.ReportNoTx
+		return s
+	}
+
+	s += fmt.Sprintf(m.ReportTx, r.TotalTransactions) + "\n\n"
+
+	// Sell/Buy section (the main business metrics)
+	hasSellBuy := r.TotalSales > 0 || r.TotalExpenses > 0
+	if hasSellBuy {
+		s += fmt.Sprintf(m.ReportSales, domain.FormatBirr(r.TotalSales, m.Birr)) + "\n"
+		s += fmt.Sprintf(m.ReportExpenses, domain.FormatBirr(r.TotalExpenses, m.Birr)) + "\n"
+
+		profit := r.TotalSales - r.TotalExpenses
+		s += fmt.Sprintf(m.ReportProfit, domain.FormatBirr(profit, m.Birr)) + "\n"
+
+		s += fmt.Sprintf(m.ReportItemsSold, r.ItemsSold) + "\n"
+		s += fmt.Sprintf(m.ReportItemsBought, r.ItemsBought) + "\n"
+	}
+
+	// Legacy debt/payment section (only show if data exists)
+	hasLegacy := r.TotalRevenue > 0 || r.TotalDebt > 0
+	if hasLegacy {
+		if hasSellBuy {
+			s += "\n"
+		}
+		s += fmt.Sprintf(m.ReportRevenue, domain.FormatBirr(r.TotalRevenue, m.Birr)) + "\n"
+		s += fmt.Sprintf(m.ReportDebt, domain.FormatBirr(r.TotalDebt, m.Birr)) + "\n"
+	}
+
+	// Top sold products
 	if len(r.TopProducts) > 0 {
 		s += "\n" + m.ReportTopProducts + "\n"
 		for i, p := range r.TopProducts {
-			s += fmt.Sprintf("  %d. %s — %d (%s)\n", i+1, p.Name, p.Count, domain.FormatBirr(p.Total, m.Birr))
+			s += fmt.Sprintf("  %d. %s — %d pcs (%s)\n", i+1, p.Name, p.Count, domain.FormatBirr(p.Total, m.Birr))
 		}
-	}
-
-	if r.TotalTransactions == 0 {
-		s += "\n" + m.ReportNoTx
 	}
 
 	return s

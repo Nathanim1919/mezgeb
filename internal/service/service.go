@@ -20,18 +20,23 @@ func (s *Service) EnsureUser(ctx context.Context, user *domain.User) error {
 }
 
 func (s *Service) AddTransaction(ctx context.Context, tx *domain.Transaction) error {
-	var delta int64
+	var balanceDelta int64
+	var stockDelta int64
+
 	switch tx.Type {
 	case domain.TxDebt:
-		delta = tx.Amount // they owe more
+		balanceDelta = tx.Amount // they owe more
 	case domain.TxPayment:
-		delta = -tx.Amount // they paid, reduce what they owe
+		balanceDelta = -tx.Amount // they paid, reduce what they owe
 	case domain.TxPurchase:
-		delta = tx.Amount // purchase on credit = debt
+		balanceDelta = tx.Amount // purchase on credit = debt
+	case domain.TxSell:
+		stockDelta = -tx.Quantity // sold items leave stock
+	case domain.TxBuy:
+		stockDelta = tx.Quantity // bought items enter stock
 	}
 
-	// Atomic: transaction insert + balance update in a single DB transaction
-	return s.Transactions.CreateWithBalanceUpdate(ctx, tx, delta)
+	return s.Transactions.CreateWithBalanceUpdate(ctx, tx, balanceDelta, stockDelta)
 }
 
 func (s *Service) GetReport(ctx context.Context, userID int64, from, to time.Time) (*domain.ReportData, error) {
@@ -46,8 +51,8 @@ func (s *Service) ListCustomers(ctx context.Context, userID int64) ([]domain.Cus
 	return s.Customers.ListByUser(ctx, userID)
 }
 
-func (s *Service) FindOrCreateProduct(ctx context.Context, userID int64, name string, price int64) (*domain.Product, error) {
-	return s.Products.FindOrCreate(ctx, userID, name, price)
+func (s *Service) FindOrCreateProduct(ctx context.Context, userID int64, name string, price int64, stock int64) (*domain.Product, error) {
+	return s.Products.FindOrCreate(ctx, userID, name, price, stock)
 }
 
 func (s *Service) ListProducts(ctx context.Context, userID int64) ([]domain.Product, error) {

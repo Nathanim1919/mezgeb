@@ -90,6 +90,43 @@ func (h *Handler) HandleUpdate(update tgbotapi.Update) {
 
 func (h *Handler) handleConversation(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
 	switch conv.Step {
+	// Transaction menu
+	case state.StepTxMenu:
+		h.handleTxMenu(ctx, msg, conv, m)
+
+	// Sell flow
+	case state.StepSellProduct:
+		h.handleSellProduct(ctx, msg, conv, m)
+	case state.StepSellNewName:
+		h.handleSellNewName(ctx, msg, conv, m)
+	case state.StepSellNewPrice:
+		h.handleSellNewPrice(ctx, msg, conv, m)
+	case state.StepSellNewStock:
+		h.handleSellNewStock(ctx, msg, conv, m)
+	case state.StepSellQuantity:
+		h.handleSellQuantity(ctx, msg, conv, m)
+	case state.StepSellNote:
+		h.handleSellNote(ctx, msg, conv, m)
+	case state.StepSellConfirm:
+		h.handleSellConfirm(ctx, msg, conv, m)
+
+	// Buy flow
+	case state.StepBuyProduct:
+		h.handleBuyProduct(ctx, msg, conv, m)
+	case state.StepBuyNewName:
+		h.handleBuyNewName(ctx, msg, conv, m)
+	case state.StepBuyNewPrice:
+		h.handleBuyNewPrice(ctx, msg, conv, m)
+	case state.StepBuyPrice:
+		h.handleBuyPrice(ctx, msg, conv, m)
+	case state.StepBuyQuantity:
+		h.handleBuyQuantity(ctx, msg, conv, m)
+	case state.StepBuyNote:
+		h.handleBuyNote(ctx, msg, conv, m)
+	case state.StepBuyConfirm:
+		h.handleBuyConfirm(ctx, msg, conv, m)
+
+	// Legacy debt/payment flow
 	case state.StepTxCustomerName:
 		h.handleTxCustomerName(ctx, msg, conv, m)
 	case state.StepTxType:
@@ -102,10 +139,18 @@ func (h *Handler) handleConversation(ctx context.Context, msg *tgbotapi.Message,
 		h.handleTxNote(ctx, msg, conv, m)
 	case state.StepTxConfirm:
 		h.handleTxConfirm(ctx, msg, conv, m)
+
+	// Product management
+	case state.StepProductMenu:
+		h.handleProductMenu(ctx, msg, conv, m)
 	case state.StepProductName:
 		h.handleProductName(ctx, msg, conv, m)
 	case state.StepProductPrice:
 		h.handleProductPrice(ctx, msg, conv, m)
+	case state.StepProductStock:
+		h.handleProductStock(ctx, msg, conv, m)
+
+	// Settings
 	case state.StepSettingsMenu:
 		h.handleSettingsMenu(ctx, msg, conv, m)
 	case state.StepSettingsLang:
