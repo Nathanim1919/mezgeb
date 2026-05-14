@@ -71,6 +71,17 @@ type Messages struct {
 	TxDeleteDone      string
 	TxNotFound        string
 
+	// Payment/Repayment
+	BtnRecordPayment  string
+	BtnRecordRepay    string
+	BtnPayAll         string
+	AskPaymentAmount  string // "How much did they pay? (owes you %s)"
+	AskRepayAmount    string // "How much are you repaying? (you owe %s)"
+	PaymentDone       string // "✅ Recorded %s payment from %s\n💰 Remaining: %s"
+	RepayDone         string // "✅ Repaid %s to %s\n💰 Remaining: %s"
+	PaymentSettled    string // "✅ ... Fully settled!"
+	AmountExceedsDebt string
+
 	// Sell/Buy flow
 	AskSellProduct   string
 	AskBuyProduct    string
@@ -253,6 +264,16 @@ func amharic() *Messages {
 		TxDeleteDone:     "✅ ግብይት ተሰርዟል!",
 		TxNotFound:       "❌ ግብይቱ አልተገኘም።",
 
+		BtnRecordPayment: "💰 ክፍያ መዝግብ",
+		BtnRecordRepay:   "💰 ብድር ክፈል",
+		BtnPayAll:        "💰 ሁሉንም ክፈል",
+		AskPaymentAmount: "💰 ስንት ከፈሉ?\n\n👤 *%s* — ይበደርዎታል *%s*",
+		AskRepayAmount:   "💰 ስንት ይከፍላሉ?\n\n👤 *%s* — እርስዎ ይበደራሉ *%s*",
+		PaymentDone:      "✅ *%s* ክፍያ ከ *%s* ተመዝግቧል\n💰 ቀሪ: *%s*",
+		RepayDone:        "✅ *%s* ለ *%s* ተከፍሏል\n💰 ቀሪ: *%s*",
+		PaymentSettled:   "✅ ተወራርዷል! ምንም ቀሪ የለም።",
+		AmountExceedsDebt: "⚠️ ከብድሩ በላይ ነው። ከፍተኛው: *%s*",
+
 		AskSellProduct:   "🛒 የትኛውን ምርት ይሸጣሉ?",
 		AskBuyProduct:    "📥 የትኛውን ምርት ይገዛሉ?",
 		BtnNewProduct:    "➕ አዲስ ምርት",
@@ -414,6 +435,16 @@ func english() *Messages {
 		TxDeleteConfirm:  "⚠️ *Are you sure?*\n\nThis will permanently delete this transaction.\n\n%s",
 		TxDeleteDone:     "✅ Transaction deleted!",
 		TxNotFound:       "❌ Transaction not found.",
+
+		BtnRecordPayment: "💰 Record Payment",
+		BtnRecordRepay:   "💰 Record Repayment",
+		BtnPayAll:        "💰 Pay All",
+		AskPaymentAmount: "💰 How much did they pay?\n\n👤 *%s* — owes you *%s*",
+		AskRepayAmount:   "💰 How much are you repaying?\n\n👤 *%s* — you owe *%s*",
+		PaymentDone:      "✅ Recorded *%s* payment from *%s*\n💰 Remaining: *%s*",
+		RepayDone:        "✅ Repaid *%s* to *%s*\n💰 Remaining: *%s*",
+		PaymentSettled:   "✅ Fully settled! No remaining balance.",
+		AmountExceedsDebt: "⚠️ Amount exceeds the debt. Maximum: *%s*",
 
 		AskSellProduct:   "🛒 Which product are you selling?",
 		AskBuyProduct:    "📥 Which product are you buying?",

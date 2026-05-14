@@ -113,6 +113,8 @@ func (h *Handler) handleConversation(ctx context.Context, msg *tgbotapi.Message,
 		h.handleTxEditNote(ctx, msg, conv, m)
 	case state.StepTxDeleteConfirm:
 		h.handleTxDeleteConfirm(ctx, msg, conv, m)
+	case state.StepTxRecordPayment:
+		h.handleRecordPayment(ctx, msg, conv, m)
 
 	// Sell flow
 	case state.StepSellProduct:

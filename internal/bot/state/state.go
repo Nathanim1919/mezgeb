@@ -27,6 +27,7 @@ const (
 	StepTxEditAmount    // entering new amount or quantity
 	StepTxEditNote      // entering new note
 	StepTxDeleteConfirm // confirm deletion
+	StepTxRecordPayment // entering payment/repayment amount
 
 	// Sell flow: product → quantity → note → confirm
 	StepSellProduct        // choose existing or "new product"

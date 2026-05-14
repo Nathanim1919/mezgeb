@@ -91,6 +91,53 @@ func TxEditMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	)
 }
 
+func TxEditMenuBorrow(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnRecordPayment),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnEditAmount),
+			tgbotapi.NewKeyboardButton(m.BtnEditNote),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnDelete),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
+func TxEditMenuLoan(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnRecordRepay),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnEditAmount),
+			tgbotapi.NewKeyboardButton(m.BtnEditNote),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnDelete),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
+func PaymentAmount(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnPayAll),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
 func TransactionMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(

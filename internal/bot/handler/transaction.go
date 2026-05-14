@@ -214,11 +214,26 @@ func (h *Handler) handleTxListSelect(ctx context.Context, msg *tgbotapi.Message,
 	h.state.Set(msg.From.ID, conv)
 
 	detail := h.formatTxDetail(tx, m)
-	h.sendWithKeyboard(msg.Chat.ID, fmt.Sprintf(m.TxEditMenuTitle, detail), keyboard.TxEditMenu(m))
+	var kb tgbotapi.ReplyKeyboardMarkup
+	switch conv.ListTxType {
+	case domain.TxDebt:
+		kb = keyboard.TxEditMenuBorrow(m)
+	case domain.TxLoan:
+		kb = keyboard.TxEditMenuLoan(m)
+	default:
+		kb = keyboard.TxEditMenu(m)
+	}
+	h.sendWithKeyboard(msg.Chat.ID, fmt.Sprintf(m.TxEditMenuTitle, detail), kb)
 }
 
 func (h *Handler) handleTxEditMenu(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
 	switch msg.Text {
+	case m.BtnRecordPayment:
+		h.startRecordPayment(ctx, msg, conv, m)
+		return
+	case m.BtnRecordRepay:
+		h.startRecordPayment(ctx, msg, conv, m)
+		return
 	case m.BtnEditAmount:
 		conv.Step = state.StepTxEditAmount
 		h.state.Set(msg.From.ID, conv)
@@ -334,6 +349,120 @@ func (h *Handler) handleTxDeleteConfirm(ctx context.Context, msg *tgbotapi.Messa
 
 	h.state.Reset(msg.From.ID)
 	h.sendWithKeyboard(msg.Chat.ID, m.TxDeleteDone, keyboard.MainMenu(m))
+}
+
+// ─── Payment/Repayment ─────────────────────────────────────────────
+
+func (h *Handler) startRecordPayment(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	tx, err := h.svc.GetTransaction(ctx, msg.From.ID, conv.SelectedTxID)
+	if err != nil || tx.CustomerID == nil {
+		h.state.Reset(msg.From.ID)
+		h.sendWithKeyboard(msg.Chat.ID, m.TxNotFound, keyboard.MainMenu(m))
+		return
+	}
+
+	customer, err := h.svc.GetCustomer(ctx, msg.From.ID, *tx.CustomerID)
+	if err != nil {
+		h.state.Reset(msg.From.ID)
+		h.sendWithKeyboard(msg.Chat.ID, m.ErrorGeneric, keyboard.MainMenu(m))
+		return
+	}
+
+	// Store the customer info and outstanding balance for the payment step
+	conv.CustomerID = customer.ID
+	conv.Customer = customer.Name
+	// For borrow (TxDebt): positive balance = they owe you
+	// For loan (TxLoan): negative balance = you owe them
+	if tx.Type == domain.TxDebt {
+		conv.Amount = customer.Balance // positive: what they owe
+	} else {
+		conv.Amount = -customer.Balance // flip: negative balance → positive amount
+	}
+	conv.Step = state.StepTxRecordPayment
+	h.state.Set(msg.From.ID, conv)
+
+	outstanding := domain.FormatBirr(conv.Amount, m.Birr)
+	if tx.Type == domain.TxDebt {
+		h.sendWithKeyboard(msg.Chat.ID,
+			fmt.Sprintf(m.AskPaymentAmount, escMD(customer.Name), outstanding),
+			keyboard.PaymentAmount(m))
+	} else {
+		h.sendWithKeyboard(msg.Chat.ID,
+			fmt.Sprintf(m.AskRepayAmount, escMD(customer.Name), outstanding),
+			keyboard.PaymentAmount(m))
+	}
+}
+
+func (h *Handler) handleRecordPayment(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	text := strings.TrimSpace(msg.Text)
+
+	var payAmount int64
+
+	if text == m.BtnPayAll {
+		payAmount = conv.Amount
+	} else {
+		amount, ok := h.parseAmountInput(msg, m)
+		if !ok {
+			return
+		}
+		payAmount = amount
+	}
+
+	if payAmount <= 0 {
+		h.send(msg.Chat.ID, m.InvalidAmount)
+		return
+	}
+
+	// Don't allow paying more than owed
+	if payAmount > conv.Amount {
+		h.sendWithKeyboard(msg.Chat.ID,
+			fmt.Sprintf(m.AmountExceedsDebt, domain.FormatBirr(conv.Amount, m.Birr)),
+			keyboard.PaymentAmount(m))
+		return
+	}
+
+	// Determine the transaction type for the payment record
+	var txType domain.TransactionType
+	if conv.ListTxType == domain.TxDebt {
+		txType = domain.TxPayment // they paid you back
+	} else {
+		txType = domain.TxPayment // you paid them back
+	}
+
+	custID := conv.CustomerID
+	tx := &domain.Transaction{
+		UserID:     msg.From.ID,
+		CustomerID: &custID,
+		Type:       txType,
+		Amount:     payAmount,
+		Note:       "",
+	}
+
+	if err := h.svc.AddTransaction(ctx, tx); err != nil {
+		h.sendWithKeyboard(msg.Chat.ID, m.ErrorGeneric, keyboard.MainMenu(m))
+		h.state.Reset(msg.From.ID)
+		return
+	}
+
+	h.state.Reset(msg.From.ID)
+
+	remaining := conv.Amount - payAmount
+	if remaining <= 0 {
+		h.sendWithKeyboard(msg.Chat.ID, m.PaymentSettled, keyboard.MainMenu(m))
+		return
+	}
+
+	payStr := domain.FormatBirr(payAmount, m.Birr)
+	remStr := domain.FormatBirr(remaining, m.Birr)
+	if conv.ListTxType == domain.TxDebt {
+		h.sendWithKeyboard(msg.Chat.ID,
+			fmt.Sprintf(m.PaymentDone, payStr, escMD(conv.Customer), remStr),
+			keyboard.MainMenu(m))
+	} else {
+		h.sendWithKeyboard(msg.Chat.ID,
+			fmt.Sprintf(m.RepayDone, payStr, escMD(conv.Customer), remStr),
+			keyboard.MainMenu(m))
+	}
 }
 
 func (h *Handler) formatTxDetail(tx *domain.Transaction, m *i18n.Messages) string {
