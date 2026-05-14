@@ -64,3 +64,26 @@ func (r *ProductRepo) GetByID(ctx context.Context, userID, id int64) (*domain.Pr
 	}
 	return &p, nil
 }
+
+func (r *ProductRepo) UpdatePrice(ctx context.Context, userID, id int64, price int64) error {
+	_, err := r.pool.Exec(ctx, `
+		UPDATE products SET price = $1, updated_at = NOW()
+		WHERE id = $2 AND user_id = $3
+	`, price, id, userID)
+	return err
+}
+
+func (r *ProductRepo) UpdateStock(ctx context.Context, userID, id int64, stock int64) error {
+	_, err := r.pool.Exec(ctx, `
+		UPDATE products SET stock = $1, updated_at = NOW()
+		WHERE id = $2 AND user_id = $3
+	`, stock, id, userID)
+	return err
+}
+
+func (r *ProductRepo) Delete(ctx context.Context, userID, id int64) error {
+	_, err := r.pool.Exec(ctx, `
+		DELETE FROM products WHERE id = $1 AND user_id = $2
+	`, id, userID)
+	return err
+}

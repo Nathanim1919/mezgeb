@@ -23,6 +23,9 @@ type ProductRepo interface {
 	FindOrCreate(ctx context.Context, userID int64, name string, price int64, stock int64) (*Product, error)
 	ListByUser(ctx context.Context, userID int64) ([]Product, error)
 	GetByID(ctx context.Context, userID, id int64) (*Product, error)
+	UpdatePrice(ctx context.Context, userID, id int64, price int64) error
+	UpdateStock(ctx context.Context, userID, id int64, stock int64) error
+	Delete(ctx context.Context, userID, id int64) error
 }
 
 type TransactionRepo interface {

@@ -112,6 +112,22 @@ func (s *Service) ListProducts(ctx context.Context, userID int64) ([]domain.Prod
 	return s.Products.ListByUser(ctx, userID)
 }
 
+func (s *Service) GetProduct(ctx context.Context, userID, id int64) (*domain.Product, error) {
+	return s.Products.GetByID(ctx, userID, id)
+}
+
+func (s *Service) UpdateProductPrice(ctx context.Context, userID, id int64, price int64) error {
+	return s.Products.UpdatePrice(ctx, userID, id, price)
+}
+
+func (s *Service) UpdateProductStock(ctx context.Context, userID, id int64, stock int64) error {
+	return s.Products.UpdateStock(ctx, userID, id, stock)
+}
+
+func (s *Service) DeleteProduct(ctx context.Context, userID, id int64) error {
+	return s.Products.Delete(ctx, userID, id)
+}
+
 func (s *Service) GetCustomer(ctx context.Context, userID, id int64) (*domain.Customer, error) {
 	return s.Customers.GetByID(ctx, userID, id)
 }

@@ -199,6 +199,21 @@ func SkipCancel(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	)
 }
 
+func ProductEditMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnEditPrice),
+			tgbotapi.NewKeyboardButton(m.BtnEditStock),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnDelete),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
 func ProductMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(

@@ -73,6 +73,13 @@ const (
 	StepProductPrice
 	StepProductStock
 
+	// Product list → select → edit/delete
+	StepProductListSelect
+	StepProductEditMenu
+	StepProductEditPrice
+	StepProductEditStock
+	StepProductDeleteConfirm
+
 	// Settings flow
 	StepSettingsMenu
 	StepSettingsLang
@@ -94,10 +101,14 @@ type Conversation struct {
 	ProductPrice int64   // used in product-add flow
 	ProductStock int64   // used in product-add flow
 
-	// Used by list → edit/delete flow
+	// Used by transaction list → edit/delete flow
 	ListTxIDs    []int64                // transaction IDs from the last list query
 	ListTxType   domain.TransactionType // which type was listed
 	SelectedTxID int64                  // the transaction the user picked
+
+	// Used by product list → edit/delete flow
+	ListProductIDs    []int64 // product IDs from the last list query
+	SelectedProductID int64   // the product the user picked
 }
 
 // Manager is a thread-safe in-memory conversation state store.

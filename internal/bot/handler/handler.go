@@ -192,6 +192,18 @@ func (h *Handler) handleConversation(ctx context.Context, msg *tgbotapi.Message,
 	case state.StepProductStock:
 		h.handleProductStock(ctx, msg, conv, m)
 
+	// Product list → edit/delete
+	case state.StepProductListSelect:
+		h.handleProductListSelect(ctx, msg, conv, m)
+	case state.StepProductEditMenu:
+		h.handleProductEditMenu(ctx, msg, conv, m)
+	case state.StepProductEditPrice:
+		h.handleProductEditPrice(ctx, msg, conv, m)
+	case state.StepProductEditStock:
+		h.handleProductEditStock(ctx, msg, conv, m)
+	case state.StepProductDeleteConfirm:
+		h.handleProductDeleteConfirm(ctx, msg, conv, m)
+
 	// Settings
 	case state.StepSettingsMenu:
 		h.handleSettingsMenu(ctx, msg, conv, m)

@@ -164,6 +164,17 @@ type Messages struct {
 	InvalidStock     string
 	ProductStock     string // "Stock: %d"
 	ProductLowStock  string // "⚠️ Low"
+	ProductListSelectHint string
+	ProductEditMenuTitle  string
+	BtnEditPrice     string
+	BtnEditStock     string
+	ProductEditAskPrice  string
+	ProductEditAskStock  string
+	ProductEditPriceDone string
+	ProductEditStockDone string
+	ProductDeleteConfirm string
+	ProductDeleteDone    string
+	ProductNotFound      string
 
 	// Settings
 	SettingsTitle     string
@@ -330,6 +341,17 @@ func amharic() *Messages {
 		InvalidStock:     "እባክዎ ትክክለኛ ቁጥር ያስገቡ። ምሳሌ: `50`",
 		ProductStock:     "ክምችት: %d",
 		ProductLowStock:  "⚠️ ዝቅተኛ",
+		ProductListSelectHint: "\n\nለማስተካከል ወይም ለመሰረዝ ቁጥር ይምረጡ 👇",
+		ProductEditMenuTitle:  "📦 *የተመረጠ ምርት*\n\n%s\n\nምን ማድረግ ይፈልጋሉ?",
+		BtnEditPrice:     "✏️ ዋጋ ቀይር",
+		BtnEditStock:     "✏️ ክምችት ቀይር",
+		ProductEditAskPrice:  "💰 አዲስ ዋጋ ያስገቡ (በብር):",
+		ProductEditAskStock:  "📊 አዲስ ክምችት ብዛት ያስገቡ:",
+		ProductEditPriceDone: "✅ ዋጋ ተቀይሯል!",
+		ProductEditStockDone: "✅ ክምችት ተቀይሯል!",
+		ProductDeleteConfirm: "⚠️ *እርግጠኛ ነዎት?*\n\nይህን ምርት በቋሚነት ይሰርዛል።\n\n📦 *%s*",
+		ProductDeleteDone:    "✅ ምርት ተሰርዟል!",
+		ProductNotFound:      "❌ ምርቱ አልተገኘም።",
 
 		SettingsTitle:     "⚙️ *ማስተካከያ*",
 		BtnLanguage:       "🌍 ቋንቋ",
@@ -481,6 +503,17 @@ func english() *Messages {
 		InvalidStock:     "Please enter a valid number. Example: `50`",
 		ProductStock:     "Stock: %d",
 		ProductLowStock:  "⚠️ Low",
+		ProductListSelectHint: "\n\nType a number to edit or delete 👇",
+		ProductEditMenuTitle:  "📦 *Selected Product*\n\n%s\n\nWhat would you like to do?",
+		BtnEditPrice:     "✏️ Edit Price",
+		BtnEditStock:     "✏️ Edit Stock",
+		ProductEditAskPrice:  "💰 Enter new price (in birr):",
+		ProductEditAskStock:  "📊 Enter new stock quantity:",
+		ProductEditPriceDone: "✅ Price updated!",
+		ProductEditStockDone: "✅ Stock updated!",
+		ProductDeleteConfirm: "⚠️ *Are you sure?*\n\nThis will permanently delete this product.\n\n📦 *%s*",
+		ProductDeleteDone:    "✅ Product deleted!",
+		ProductNotFound:      "❌ Product not found.",
 
 		SettingsTitle:     "⚙️ *Settings*",
 		BtnLanguage:       "🌍 Language",
