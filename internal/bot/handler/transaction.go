@@ -421,24 +421,17 @@ func (h *Handler) handleRecordPayment(ctx context.Context, msg *tgbotapi.Message
 		return
 	}
 
-	// Determine the transaction type for the payment record
-	var txType domain.TransactionType
-	if conv.ListTxType == domain.TxDebt {
-		txType = domain.TxPayment // they paid you back
-	} else {
-		txType = domain.TxPayment // you paid them back
-	}
-
 	custID := conv.CustomerID
 	tx := &domain.Transaction{
 		UserID:     msg.From.ID,
 		CustomerID: &custID,
-		Type:       txType,
+		Type:       domain.TxPayment,
 		Amount:     payAmount,
 		Note:       "",
 	}
 
-	if err := h.svc.AddTransaction(ctx, tx); err != nil {
+	isLoanRepay := conv.ListTxType == domain.TxLoan
+	if err := h.svc.RecordPayment(ctx, tx, isLoanRepay); err != nil {
 		h.sendWithKeyboard(msg.Chat.ID, m.ErrorGeneric, keyboard.MainMenu(m))
 		h.state.Reset(msg.From.ID)
 		return

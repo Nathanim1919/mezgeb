@@ -96,6 +96,19 @@ func (s *Service) DeleteTransaction(ctx context.Context, userID int64, tx *domai
 	return s.Transactions.DeleteWithRollback(ctx, userID, tx.ID, balanceDelta, stockDelta)
 }
 
+// RecordPayment creates a payment transaction with the correct balance direction.
+// For borrow payments (they pay you back): balance decreases (positive → 0).
+// For loan repayments (you pay them back): balance increases (negative → 0).
+func (s *Service) RecordPayment(ctx context.Context, tx *domain.Transaction, isLoanRepay bool) error {
+	var balanceDelta int64
+	if isLoanRepay {
+		balanceDelta = tx.Amount // increase balance (make less negative)
+	} else {
+		balanceDelta = -tx.Amount // decrease balance (make less positive)
+	}
+	return s.Transactions.CreateWithBalanceUpdate(ctx, tx, balanceDelta, 0)
+}
+
 func (s *Service) GetReport(ctx context.Context, userID int64, from, to time.Time) (*domain.ReportData, error) {
 	return s.Reports.GetReport(ctx, userID, from, to)
 }
