@@ -118,6 +118,22 @@ func (h *Handler) listTransactions(ctx context.Context, msg *tgbotapi.Message, c
 		return
 	}
 
+	// For borrow/loan, look up customer balances to show remaining amounts
+	customerBalances := make(map[int64]int64)
+	if txType == domain.TxDebt || txType == domain.TxLoan {
+		for _, tx := range txns {
+			if tx.CustomerID == nil {
+				continue
+			}
+			if _, ok := customerBalances[*tx.CustomerID]; ok {
+				continue
+			}
+			if cust, err := h.svc.GetCustomer(ctx, msg.From.ID, *tx.CustomerID); err == nil {
+				customerBalances[cust.ID] = cust.Balance
+			}
+		}
+	}
+
 	// Store IDs so user can pick by number
 	var ids []int64
 	for _, tx := range txns {
@@ -131,7 +147,23 @@ func (h *Handler) listTransactions(ctx context.Context, msg *tgbotapi.Message, c
 
 	text := h.formatTxListTitle(txType, m) + "\n\n"
 	for i, tx := range txns {
-		text += h.formatTxListItem(i+1, tx, txType, m) + "\n"
+		text += h.formatTxListItem(i+1, tx, txType, m)
+		// Show remaining balance for borrow/loan
+		if tx.CustomerID != nil && (txType == domain.TxDebt || txType == domain.TxLoan) {
+			balance := customerBalances[*tx.CustomerID]
+			var outstanding int64
+			if txType == domain.TxDebt {
+				outstanding = balance // positive = they still owe
+			} else {
+				outstanding = -balance // negative balance → positive display
+			}
+			if outstanding <= 0 {
+				text += "\n" + m.TxListSettled
+			} else {
+				text += "\n" + fmt.Sprintf(m.TxListRemaining, domain.FormatBirr(outstanding, m.Birr))
+			}
+		}
+		text += "\n"
 	}
 	text += fmt.Sprintf(m.TxListTotal, len(txns))
 	text += m.TxListSelectHint

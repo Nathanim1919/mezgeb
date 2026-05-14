@@ -56,6 +56,8 @@ type Messages struct {
 	TxListItem       string // "%d. %s — %s (%s)"
 	TxListTotal      string // "Total: %d transactions"
 	TxListSelectHint string // "Type a number to edit/delete"
+	TxListRemaining  string // "   💰 Remaining: %s"
+	TxListSettled    string // "   ✅ Settled"
 
 	// Transaction edit/delete
 	TxEditMenuTitle   string // shows tx details + options
@@ -250,6 +252,8 @@ func amharic() *Messages {
 		TxListItem:      "%d. *%s* — %s",
 		TxListTotal:     "\n_ጠቅላላ: %d ግብይቶች_",
 		TxListSelectHint: "\n\nለማስተካከል ወይም ለመሰረዝ ቁጥር ይምረጡ 👇",
+		TxListRemaining:  "   💰 ቀሪ: *%s*",
+		TxListSettled:    "   ✅ ተወራርዷል",
 
 		TxEditMenuTitle:  "📋 *የተመረጠ ግብይት*\n\n%s\n\nምን ማድረግ ይፈልጋሉ?",
 		BtnEditAmount:    "✏️ መጠን ቀይር",
@@ -422,6 +426,8 @@ func english() *Messages {
 		TxListItem:      "%d. *%s* — %s",
 		TxListTotal:     "\n_Total: %d transactions_",
 		TxListSelectHint: "\n\nType a number to edit or delete 👇",
+		TxListRemaining:  "   💰 Remaining: *%s*",
+		TxListSettled:    "   ✅ Settled",
 
 		TxEditMenuTitle:  "📋 *Selected Transaction*\n\n%s\n\nWhat would you like to do?",
 		BtnEditAmount:    "✏️ Edit Amount",
