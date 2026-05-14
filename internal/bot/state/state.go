@@ -15,6 +15,19 @@ const (
 	// Transaction menu
 	StepTxMenu
 
+	// Sub-menus for each transaction type
+	StepSellMenu
+	StepBuyMenu
+	StepBorrowMenu
+	StepLoanMenu
+
+	// Transaction list → select → edit/delete
+	StepTxListSelect    // user picks a number from the list
+	StepTxEditMenu      // edit menu: edit amount/qty, edit note, delete
+	StepTxEditAmount    // entering new amount or quantity
+	StepTxEditNote      // entering new note
+	StepTxDeleteConfirm // confirm deletion
+
 	// Sell flow: product → quantity → note → confirm
 	StepSellProduct        // choose existing or "new product"
 	StepSellNewName        // new product: name
@@ -80,6 +93,11 @@ type Conversation struct {
 	Note         string
 	ProductPrice int64   // used in product-add flow
 	ProductStock int64   // used in product-add flow
+
+	// Used by list → edit/delete flow
+	ListTxIDs    []int64                // transaction IDs from the last list query
+	ListTxType   domain.TransactionType // which type was listed
+	SelectedTxID int64                  // the transaction the user picked
 }
 
 // Manager is a thread-safe in-memory conversation state store.

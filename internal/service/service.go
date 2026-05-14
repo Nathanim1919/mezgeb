@@ -41,16 +41,67 @@ func (s *Service) AddTransaction(ctx context.Context, tx *domain.Transaction) er
 	return s.Transactions.CreateWithBalanceUpdate(ctx, tx, balanceDelta, stockDelta)
 }
 
+func (s *Service) ListTransactionsByType(ctx context.Context, userID int64, txType domain.TransactionType, limit int) ([]domain.Transaction, error) {
+	return s.Transactions.ListByType(ctx, userID, txType, limit)
+}
+
+func (s *Service) GetTransaction(ctx context.Context, userID, id int64) (*domain.Transaction, error) {
+	return s.Transactions.GetByID(ctx, userID, id)
+}
+
+func (s *Service) UpdateTransactionAmount(ctx context.Context, userID, txID int64, oldTx *domain.Transaction, newAmount, newQuantity int64) error {
+	var balanceDelta, stockDelta int64
+
+	switch oldTx.Type {
+	case domain.TxDebt:
+		balanceDelta = newAmount - oldTx.Amount // adjust: new debt - old debt
+	case domain.TxPayment:
+		balanceDelta = -(newAmount - oldTx.Amount) // adjust: payments reduce balance
+	case domain.TxPurchase:
+		balanceDelta = newAmount - oldTx.Amount
+	case domain.TxSell:
+		stockDelta = -(newQuantity - oldTx.Quantity) // more sold = less stock
+	case domain.TxBuy:
+		stockDelta = newQuantity - oldTx.Quantity // more bought = more stock
+	case domain.TxLoan:
+		balanceDelta = -(newAmount - oldTx.Amount) // loans reduce balance (you owe)
+	}
+
+	return s.Transactions.UpdateAmountAndQuantity(ctx, userID, txID, newAmount, newQuantity, balanceDelta, stockDelta)
+}
+
+func (s *Service) UpdateTransactionNote(ctx context.Context, userID, txID int64, note string) error {
+	return s.Transactions.UpdateNote(ctx, userID, txID, note)
+}
+
+func (s *Service) DeleteTransaction(ctx context.Context, userID int64, tx *domain.Transaction) error {
+	var balanceDelta, stockDelta int64
+
+	// Reverse the original effect
+	switch tx.Type {
+	case domain.TxDebt:
+		balanceDelta = -tx.Amount // undo: they owed more
+	case domain.TxPayment:
+		balanceDelta = tx.Amount // undo: they paid, add back
+	case domain.TxPurchase:
+		balanceDelta = -tx.Amount
+	case domain.TxSell:
+		stockDelta = tx.Quantity // undo: return items to stock
+	case domain.TxBuy:
+		stockDelta = -tx.Quantity // undo: remove items from stock
+	case domain.TxLoan:
+		balanceDelta = tx.Amount // undo: you no longer owe
+	}
+
+	return s.Transactions.DeleteWithRollback(ctx, userID, tx.ID, balanceDelta, stockDelta)
+}
+
 func (s *Service) GetReport(ctx context.Context, userID int64, from, to time.Time) (*domain.ReportData, error) {
 	return s.Reports.GetReport(ctx, userID, from, to)
 }
 
 func (s *Service) FindOrCreateCustomer(ctx context.Context, userID int64, name string) (*domain.Customer, error) {
 	return s.Customers.FindOrCreate(ctx, userID, name)
-}
-
-func (s *Service) ListCustomers(ctx context.Context, userID int64) ([]domain.Customer, error) {
-	return s.Customers.ListByUser(ctx, userID)
 }
 
 func (s *Service) FindOrCreateProduct(ctx context.Context, userID int64, name string, price int64, stock int64) (*domain.Product, error) {

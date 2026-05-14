@@ -30,24 +30,356 @@ func (h *Handler) startTransaction(msg *tgbotapi.Message, m *i18n.Messages) {
 func (h *Handler) handleTxMenu(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
 	switch msg.Text {
 	case m.BtnSell:
+		conv.Step = state.StepSellMenu
+		h.state.Set(msg.From.ID, conv)
+		h.sendWithKeyboard(msg.Chat.ID, m.SellMenuTitle, keyboard.SellMenu(m))
+	case m.BtnBuy:
+		conv.Step = state.StepBuyMenu
+		h.state.Set(msg.From.ID, conv)
+		h.sendWithKeyboard(msg.Chat.ID, m.BuyMenuTitle, keyboard.BuyMenu(m))
+	case m.BtnBorrow:
+		conv.Step = state.StepBorrowMenu
+		h.state.Set(msg.From.ID, conv)
+		h.sendWithKeyboard(msg.Chat.ID, m.BorrowMenuTitle, keyboard.BorrowMenu(m))
+	case m.BtnLoan:
+		conv.Step = state.StepLoanMenu
+		h.state.Set(msg.From.ID, conv)
+		h.sendWithKeyboard(msg.Chat.ID, m.LoanMenuTitle, keyboard.LoanMenu(m))
+	default:
+		h.send(msg.Chat.ID, m.InvalidChoice)
+	}
+}
+
+// ─── Sub-menu handlers ─────────────────────────────────────────────
+
+func (h *Handler) handleSellMenu(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	switch msg.Text {
+	case m.BtnNewSell:
 		conv.TxType = domain.TxSell
 		h.startSellBuyProductChoice(ctx, msg, conv, m, m.AskSellProduct, state.StepSellProduct)
-	case m.BtnBuy:
+	case m.BtnListSells:
+		h.listTransactions(ctx, msg, conv, m, domain.TxSell)
+	default:
+		h.send(msg.Chat.ID, m.InvalidChoice)
+	}
+}
+
+func (h *Handler) handleBuyMenu(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	switch msg.Text {
+	case m.BtnNewBuy:
 		conv.TxType = domain.TxBuy
 		h.startSellBuyProductChoice(ctx, msg, conv, m, m.AskBuyProduct, state.StepBuyProduct)
-	case m.BtnBorrow:
+	case m.BtnListBuys:
+		h.listTransactions(ctx, msg, conv, m, domain.TxBuy)
+	default:
+		h.send(msg.Chat.ID, m.InvalidChoice)
+	}
+}
+
+func (h *Handler) handleBorrowMenu(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	switch msg.Text {
+	case m.BtnNewBorrow:
 		conv.TxType = domain.TxDebt
 		conv.Step = state.StepBorrowCustomer
 		h.state.Set(msg.From.ID, conv)
 		h.sendWithKeyboard(msg.Chat.ID, m.AskBorrowCustomer, keyboard.Cancel(m))
-	case m.BtnLoan:
+	case m.BtnListBorrows:
+		h.listTransactions(ctx, msg, conv, m, domain.TxDebt)
+	default:
+		h.send(msg.Chat.ID, m.InvalidChoice)
+	}
+}
+
+func (h *Handler) handleLoanMenu(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	switch msg.Text {
+	case m.BtnNewLoan:
 		conv.TxType = domain.TxLoan
 		conv.Step = state.StepLoanPerson
 		h.state.Set(msg.From.ID, conv)
 		h.sendWithKeyboard(msg.Chat.ID, m.AskLoanPerson, keyboard.Cancel(m))
+	case m.BtnListLoans:
+		h.listTransactions(ctx, msg, conv, m, domain.TxLoan)
 	default:
 		h.send(msg.Chat.ID, m.InvalidChoice)
 	}
+}
+
+func (h *Handler) listTransactions(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages, txType domain.TransactionType) {
+	txns, err := h.svc.ListTransactionsByType(ctx, msg.From.ID, txType, 10)
+	if err != nil {
+		h.state.Reset(msg.From.ID)
+		h.sendWithKeyboard(msg.Chat.ID, m.ErrorGeneric, keyboard.MainMenu(m))
+		return
+	}
+
+	if len(txns) == 0 {
+		h.state.Reset(msg.From.ID)
+		h.sendWithKeyboard(msg.Chat.ID, m.TxListEmpty, keyboard.MainMenu(m))
+		return
+	}
+
+	// Store IDs so user can pick by number
+	var ids []int64
+	for _, tx := range txns {
+		ids = append(ids, tx.ID)
+	}
+
+	conv.ListTxIDs = ids
+	conv.ListTxType = txType
+	conv.Step = state.StepTxListSelect
+	h.state.Set(msg.From.ID, conv)
+
+	text := h.formatTxListTitle(txType, m) + "\n\n"
+	for i, tx := range txns {
+		text += h.formatTxListItem(i+1, tx, txType, m) + "\n"
+	}
+	text += fmt.Sprintf(m.TxListTotal, len(txns))
+	text += m.TxListSelectHint
+
+	h.sendWithKeyboard(msg.Chat.ID, text, keyboard.Cancel(m))
+}
+
+func (h *Handler) formatTxListTitle(txType domain.TransactionType, m *i18n.Messages) string {
+	switch txType {
+	case domain.TxSell:
+		return m.SellMenuTitle
+	case domain.TxBuy:
+		return m.BuyMenuTitle
+	case domain.TxDebt:
+		return m.BorrowMenuTitle
+	case domain.TxLoan:
+		return m.LoanMenuTitle
+	default:
+		return m.TxMenuTitle
+	}
+}
+
+func (h *Handler) formatTxListItem(idx int, tx domain.Transaction, txType domain.TransactionType, m *i18n.Messages) string {
+	date := tx.CreatedAt.Format("02/01")
+	amount := domain.FormatBirr(tx.Amount, m.Birr)
+
+	var detail string
+	switch txType {
+	case domain.TxSell:
+		if tx.ProductName != "" {
+			detail = fmt.Sprintf("%d×%s", tx.Quantity, escMD(tx.ProductName))
+		} else {
+			detail = amount
+		}
+	case domain.TxBuy:
+		if tx.ProductName != "" {
+			detail = fmt.Sprintf("%d×%s", tx.Quantity, escMD(tx.ProductName))
+		} else {
+			detail = amount
+		}
+	case domain.TxDebt:
+		if tx.CustomerName != "" {
+			detail = escMD(tx.CustomerName)
+		} else {
+			detail = amount
+		}
+	case domain.TxLoan:
+		if tx.CustomerName != "" {
+			detail = escMD(tx.CustomerName)
+		} else {
+			detail = amount
+		}
+	default:
+		detail = amount
+	}
+
+	return fmt.Sprintf(m.TxListItem, idx, detail, amount) + " _(" + date + ")_"
+}
+
+// ─── Transaction Edit/Delete ───────────────────────────────────────
+
+func (h *Handler) handleTxListSelect(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	text := strings.TrimSpace(msg.Text)
+	idx, err := strconv.Atoi(text)
+	if err != nil || idx < 1 || idx > len(conv.ListTxIDs) {
+		h.send(msg.Chat.ID, m.InvalidChoice)
+		return
+	}
+
+	txID := conv.ListTxIDs[idx-1]
+	tx, err := h.svc.GetTransaction(ctx, msg.From.ID, txID)
+	if err != nil {
+		h.state.Reset(msg.From.ID)
+		h.sendWithKeyboard(msg.Chat.ID, m.TxNotFound, keyboard.MainMenu(m))
+		return
+	}
+
+	conv.SelectedTxID = tx.ID
+	conv.Step = state.StepTxEditMenu
+	h.state.Set(msg.From.ID, conv)
+
+	detail := h.formatTxDetail(tx, m)
+	h.sendWithKeyboard(msg.Chat.ID, fmt.Sprintf(m.TxEditMenuTitle, detail), keyboard.TxEditMenu(m))
+}
+
+func (h *Handler) handleTxEditMenu(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	switch msg.Text {
+	case m.BtnEditAmount:
+		conv.Step = state.StepTxEditAmount
+		h.state.Set(msg.From.ID, conv)
+		// Show appropriate prompt based on tx type
+		if conv.ListTxType == domain.TxSell || conv.ListTxType == domain.TxBuy {
+			h.sendWithKeyboard(msg.Chat.ID, m.TxEditAskQty, keyboard.Cancel(m))
+		} else {
+			h.sendWithKeyboard(msg.Chat.ID, m.TxEditAskAmount, keyboard.Cancel(m))
+		}
+	case m.BtnEditNote:
+		conv.Step = state.StepTxEditNote
+		h.state.Set(msg.From.ID, conv)
+		h.sendWithKeyboard(msg.Chat.ID, m.TxEditAskNote, keyboard.SkipCancel(m))
+	case m.BtnDelete:
+		tx, err := h.svc.GetTransaction(ctx, msg.From.ID, conv.SelectedTxID)
+		if err != nil {
+			h.state.Reset(msg.From.ID)
+			h.sendWithKeyboard(msg.Chat.ID, m.TxNotFound, keyboard.MainMenu(m))
+			return
+		}
+		conv.Step = state.StepTxDeleteConfirm
+		h.state.Set(msg.From.ID, conv)
+		detail := h.formatTxDetail(tx, m)
+		h.sendWithKeyboard(msg.Chat.ID, fmt.Sprintf(m.TxDeleteConfirm, detail), keyboard.Confirm(m))
+	default:
+		h.send(msg.Chat.ID, m.InvalidChoice)
+	}
+}
+
+func (h *Handler) handleTxEditAmount(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	tx, err := h.svc.GetTransaction(ctx, msg.From.ID, conv.SelectedTxID)
+	if err != nil {
+		h.state.Reset(msg.From.ID)
+		h.sendWithKeyboard(msg.Chat.ID, m.TxNotFound, keyboard.MainMenu(m))
+		return
+	}
+
+	if tx.Type == domain.TxSell || tx.Type == domain.TxBuy {
+		// Edit quantity — recalculate amount from unit price
+		newQty, ok := h.parseQuantityInput(msg, m)
+		if !ok {
+			return
+		}
+		unitPrice := int64(0)
+		if tx.Quantity > 0 {
+			unitPrice = tx.Amount / tx.Quantity
+		}
+		newAmount := unitPrice * newQty
+
+		if err := h.svc.UpdateTransactionAmount(ctx, msg.From.ID, tx.ID, tx, newAmount, newQty); err != nil {
+			h.sendWithKeyboard(msg.Chat.ID, m.ErrorGeneric, keyboard.MainMenu(m))
+			h.state.Reset(msg.From.ID)
+			return
+		}
+
+		h.state.Reset(msg.From.ID)
+		h.sendWithKeyboard(msg.Chat.ID, m.TxEditAmountDone, keyboard.MainMenu(m))
+	} else {
+		// Edit amount directly (borrow/loan)
+		newAmount, ok := h.parseAmountInput(msg, m)
+		if !ok {
+			return
+		}
+
+		if err := h.svc.UpdateTransactionAmount(ctx, msg.From.ID, tx.ID, tx, newAmount, tx.Quantity); err != nil {
+			h.sendWithKeyboard(msg.Chat.ID, m.ErrorGeneric, keyboard.MainMenu(m))
+			h.state.Reset(msg.From.ID)
+			return
+		}
+
+		h.state.Reset(msg.From.ID)
+		h.sendWithKeyboard(msg.Chat.ID, m.TxEditAmountDone, keyboard.MainMenu(m))
+	}
+}
+
+func (h *Handler) handleTxEditNote(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	note := strings.TrimSpace(msg.Text)
+	if note == m.BtnSkip {
+		note = ""
+	}
+	if len(note) > 200 {
+		note = note[:200]
+	}
+
+	if err := h.svc.UpdateTransactionNote(ctx, msg.From.ID, conv.SelectedTxID, note); err != nil {
+		h.sendWithKeyboard(msg.Chat.ID, m.ErrorGeneric, keyboard.MainMenu(m))
+		h.state.Reset(msg.From.ID)
+		return
+	}
+
+	h.state.Reset(msg.From.ID)
+	h.sendWithKeyboard(msg.Chat.ID, m.TxEditNoteDone, keyboard.MainMenu(m))
+}
+
+func (h *Handler) handleTxDeleteConfirm(ctx context.Context, msg *tgbotapi.Message, conv *state.Conversation, m *i18n.Messages) {
+	if msg.Text != m.BtnConfirm {
+		h.send(msg.Chat.ID, m.InvalidChoice)
+		return
+	}
+
+	tx, err := h.svc.GetTransaction(ctx, msg.From.ID, conv.SelectedTxID)
+	if err != nil {
+		h.state.Reset(msg.From.ID)
+		h.sendWithKeyboard(msg.Chat.ID, m.TxNotFound, keyboard.MainMenu(m))
+		return
+	}
+
+	if err := h.svc.DeleteTransaction(ctx, msg.From.ID, tx); err != nil {
+		h.sendWithKeyboard(msg.Chat.ID, m.ErrorGeneric, keyboard.MainMenu(m))
+		h.state.Reset(msg.From.ID)
+		return
+	}
+
+	h.state.Reset(msg.From.ID)
+	h.sendWithKeyboard(msg.Chat.ID, m.TxDeleteDone, keyboard.MainMenu(m))
+}
+
+func (h *Handler) formatTxDetail(tx *domain.Transaction, m *i18n.Messages) string {
+	amount := domain.FormatBirr(tx.Amount, m.Birr)
+	date := tx.CreatedAt.Format("02/01/2006")
+
+	var lines []string
+
+	switch tx.Type {
+	case domain.TxSell, domain.TxBuy:
+		var typeLabel string
+		if tx.Type == domain.TxSell {
+			typeLabel = m.BtnSell
+		} else {
+			typeLabel = m.BtnBuy
+		}
+		lines = append(lines, fmt.Sprintf(m.TxSummaryType, typeLabel))
+		if tx.ProductName != "" {
+			lines = append(lines, fmt.Sprintf(m.TxSummaryProduct, escMD(tx.ProductName)))
+		}
+		if tx.Quantity > 0 {
+			lines = append(lines, fmt.Sprintf(m.TxSummaryQty, tx.Quantity))
+		}
+		lines = append(lines, fmt.Sprintf(m.TxSummaryTotal, amount))
+	case domain.TxDebt, domain.TxLoan:
+		var typeLabel string
+		if tx.Type == domain.TxDebt {
+			typeLabel = m.BtnBorrow
+		} else {
+			typeLabel = m.BtnLoan
+		}
+		lines = append(lines, fmt.Sprintf(m.TxSummaryType, typeLabel))
+		if tx.CustomerName != "" {
+			lines = append(lines, fmt.Sprintf(m.TxSummaryCustomer, escMD(tx.CustomerName)))
+		}
+		lines = append(lines, fmt.Sprintf(m.TxSummaryAmount, amount))
+	default:
+		lines = append(lines, fmt.Sprintf(m.TxSummaryAmount, amount))
+	}
+
+	if tx.Note != "" {
+		lines = append(lines, fmt.Sprintf(m.TxSummaryNote, escMD(tx.Note)))
+	}
+	lines = append(lines, "📅 "+date)
+
+	return strings.Join(lines, "\n")
 }
 
 // ─── Shared: Product Selection ──────────────────────────────────────

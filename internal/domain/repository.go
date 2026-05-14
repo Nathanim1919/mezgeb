@@ -29,6 +29,11 @@ type TransactionRepo interface {
 	// CreateWithBalanceUpdate atomically creates a transaction, updates customer balance and product stock.
 	CreateWithBalanceUpdate(ctx context.Context, tx *Transaction, balanceDelta int64, stockDelta int64) error
 	ListByUser(ctx context.Context, userID int64, from, to time.Time) ([]Transaction, error)
+	ListByType(ctx context.Context, userID int64, txType TransactionType, limit int) ([]Transaction, error)
+	GetByID(ctx context.Context, userID, id int64) (*Transaction, error)
+	UpdateAmountAndQuantity(ctx context.Context, userID, id int64, amount, quantity int64, balanceDelta, stockDelta int64) error
+	UpdateNote(ctx context.Context, userID, id int64, note string) error
+	DeleteWithRollback(ctx context.Context, userID, id int64, balanceDelta, stockDelta int64) error
 }
 
 type ReportData struct {

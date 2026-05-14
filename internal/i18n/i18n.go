@@ -28,7 +28,6 @@ type Messages struct {
 	MainMenuPrompt   string
 	BtnAddTx         string
 	BtnReports       string
-	BtnCustomers     string
 	BtnProducts      string
 	BtnSettings      string
 
@@ -39,6 +38,38 @@ type Messages struct {
 	BtnBorrow        string
 	BtnLoan          string
 	ComingSoon       string
+
+	// Transaction sub-menus
+	SellMenuTitle    string
+	BuyMenuTitle     string
+	BorrowMenuTitle  string
+	LoanMenuTitle    string
+	BtnNewSell       string
+	BtnListSells     string
+	BtnNewBuy        string
+	BtnListBuys      string
+	BtnNewBorrow     string
+	BtnListBorrows   string
+	BtnNewLoan       string
+	BtnListLoans     string
+	TxListEmpty      string
+	TxListItem       string // "%d. %s — %s (%s)"
+	TxListTotal      string // "Total: %d transactions"
+	TxListSelectHint string // "Type a number to edit/delete"
+
+	// Transaction edit/delete
+	TxEditMenuTitle   string // shows tx details + options
+	BtnEditAmount     string
+	BtnEditNote       string
+	BtnDelete         string
+	TxEditAskAmount   string
+	TxEditAskQty      string
+	TxEditAskNote     string
+	TxEditAmountDone  string
+	TxEditNoteDone    string
+	TxDeleteConfirm   string
+	TxDeleteDone      string
+	TxNotFound        string
 
 	// Sell/Buy flow
 	AskSellProduct   string
@@ -118,14 +149,6 @@ type Messages struct {
 	ReportNoTx        string
 	ReportError       string
 
-	// Customers
-	CustomersTitle   string
-	CustomersEmpty   string
-	CustomerOwes     string // "owes you %s"
-	CustomerYouOwe   string // "you owe %s"
-	CustomerSettled  string
-	CustomersTotal   string
-
 	// Products
 	ProductsTitle    string
 	ProductsEmpty    string
@@ -179,7 +202,6 @@ func amharic() *Messages {
 		MainMenuPrompt:   "ምን ማድረግ ይፈልጋሉ?",
 		BtnAddTx:         "💰 ግብይቶች",
 		BtnReports:       "📊 ሪፖርት",
-		BtnCustomers:     "👥 ደንበኞች",
 		BtnProducts:      "📦 ምርቶች",
 		BtnSettings:      "⚙️ ማስተካከያ",
 
@@ -189,6 +211,36 @@ func amharic() *Messages {
 		BtnBorrow:        "🤝 ብድር",
 		BtnLoan:          "💸 አበድር",
 		ComingSoon:       "🔜 በቅርቡ ይመጣል!",
+
+		SellMenuTitle:   "🛒 *ሽያጭ*\n\nምን ማድረግ ይፈልጋሉ?",
+		BuyMenuTitle:    "📥 *ግዢ*\n\nምን ማድረግ ይፈልጋሉ?",
+		BorrowMenuTitle: "🤝 *ብድር*\n\nምን ማድረግ ይፈልጋሉ?",
+		LoanMenuTitle:   "💸 *አበድር*\n\nምን ማድረግ ይፈልጋሉ?",
+		BtnNewSell:      "➕ አዲስ ሽያጭ",
+		BtnListSells:    "📋 የሽያጭ ዝርዝር",
+		BtnNewBuy:       "➕ አዲስ ግዢ",
+		BtnListBuys:     "📋 የግዢ ዝርዝር",
+		BtnNewBorrow:    "➕ አዲስ ብድር",
+		BtnListBorrows:  "📋 የብድር ዝርዝር",
+		BtnNewLoan:      "➕ አዲስ ብድር ጠይቅ",
+		BtnListLoans:    "📋 የተበደሩ ዝርዝር",
+		TxListEmpty:     "_እስካሁን ግብይት የለም።_",
+		TxListItem:      "%d. *%s* — %s",
+		TxListTotal:     "\n_ጠቅላላ: %d ግብይቶች_",
+		TxListSelectHint: "\n\nለማስተካከል ወይም ለመሰረዝ ቁጥር ይምረጡ 👇",
+
+		TxEditMenuTitle:  "📋 *የተመረጠ ግብይት*\n\n%s\n\nምን ማድረግ ይፈልጋሉ?",
+		BtnEditAmount:    "✏️ መጠን ቀይር",
+		BtnEditNote:      "✏️ ማስታወሻ ቀይር",
+		BtnDelete:        "🗑 ሰርዝ",
+		TxEditAskAmount:  "💰 አዲስ መጠን ያስገቡ (በብር):",
+		TxEditAskQty:     "🔢 አዲስ ብዛት ያስገቡ:",
+		TxEditAskNote:    "📝 አዲስ ማስታወሻ ያስገቡ (ወይም ዝለል ለማጥፋት):",
+		TxEditAmountDone: "✅ መጠን ተቀይሯል!",
+		TxEditNoteDone:   "✅ ማስታወሻ ተቀይሯል!",
+		TxDeleteConfirm:  "⚠️ *እርግጠኛ ነዎት?*\n\nይህን ግብይት በቋሚነት ይሰርዛል።\n\n%s",
+		TxDeleteDone:     "✅ ግብይት ተሰርዟል!",
+		TxNotFound:       "❌ ግብይቱ አልተገኘም።",
 
 		AskSellProduct:   "🛒 የትኛውን ምርት ይሸጣሉ?",
 		AskBuyProduct:    "📥 የትኛውን ምርት ይገዛሉ?",
@@ -264,13 +316,6 @@ func amharic() *Messages {
 		ReportNoTx:        "_በዚህ ጊዜ ውስጥ ግብይት የለም።_",
 		ReportError:       "❌ ሪፖርት ማዘጋጀት አልተቻለም።",
 
-		CustomersTitle:   "👥 *ደንበኞችዎ*",
-		CustomersEmpty:   "👥 እስካሁን ደንበኛ የለም።\n\nየመጀመሪያ ግብይትዎን ያስገቡ ደንበኛ ለመፍጠር!",
-		CustomerOwes:     "ይበደርዎታል %s",
-		CustomerYouOwe:   "እርስዎ ይበደራሉ %s",
-		CustomerSettled:  "ተወራርዷል ✓",
-		CustomersTotal:   "_ጠቅላላ: %d ደንበኞች_",
-
 		ProductsTitle:    "📦 *ምርቶችዎ*",
 		ProductsEmpty:    "_እስካሁን ምርት የለም።_",
 		BtnAddProduct:    "➕ ምርት ጨምር",
@@ -308,7 +353,6 @@ func english() *Messages {
 		MainMenuPrompt:   "What would you like to do?",
 		BtnAddTx:         "💰 Transactions",
 		BtnReports:       "📊 Reports",
-		BtnCustomers:     "👥 Customers",
 		BtnProducts:      "📦 Products",
 		BtnSettings:      "⚙️ Settings",
 
@@ -318,6 +362,36 @@ func english() *Messages {
 		BtnBorrow:        "🤝 Borrow",
 		BtnLoan:          "💸 Loan",
 		ComingSoon:       "🔜 Coming soon!",
+
+		SellMenuTitle:   "🛒 *Sell*\n\nWhat would you like to do?",
+		BuyMenuTitle:    "📥 *Buy*\n\nWhat would you like to do?",
+		BorrowMenuTitle: "🤝 *Borrow*\n\nWhat would you like to do?",
+		LoanMenuTitle:   "💸 *Loan*\n\nWhat would you like to do?",
+		BtnNewSell:      "➕ New Sale",
+		BtnListSells:    "📋 Sales History",
+		BtnNewBuy:       "➕ New Purchase",
+		BtnListBuys:     "📋 Purchase History",
+		BtnNewBorrow:    "➕ New Borrow",
+		BtnListBorrows:  "📋 Borrow History",
+		BtnNewLoan:      "➕ New Loan",
+		BtnListLoans:    "📋 Loan History",
+		TxListEmpty:     "_No transactions yet._",
+		TxListItem:      "%d. *%s* — %s",
+		TxListTotal:     "\n_Total: %d transactions_",
+		TxListSelectHint: "\n\nType a number to edit or delete 👇",
+
+		TxEditMenuTitle:  "📋 *Selected Transaction*\n\n%s\n\nWhat would you like to do?",
+		BtnEditAmount:    "✏️ Edit Amount",
+		BtnEditNote:      "✏️ Edit Note",
+		BtnDelete:        "🗑 Delete",
+		TxEditAskAmount:  "💰 Enter new amount (in birr):",
+		TxEditAskQty:     "🔢 Enter new quantity:",
+		TxEditAskNote:    "📝 Enter new note (or skip to clear):",
+		TxEditAmountDone: "✅ Amount updated!",
+		TxEditNoteDone:   "✅ Note updated!",
+		TxDeleteConfirm:  "⚠️ *Are you sure?*\n\nThis will permanently delete this transaction.\n\n%s",
+		TxDeleteDone:     "✅ Transaction deleted!",
+		TxNotFound:       "❌ Transaction not found.",
 
 		AskSellProduct:   "🛒 Which product are you selling?",
 		AskBuyProduct:    "📥 Which product are you buying?",
@@ -392,13 +466,6 @@ func english() *Messages {
 		ReportTopProducts: "🏆 *Top Sold Products:*",
 		ReportNoTx:        "_No transactions in this period._",
 		ReportError:       "❌ Error generating report.",
-
-		CustomersTitle:   "👥 *Your Customers*",
-		CustomersEmpty:   "👥 No customers yet.\n\nAdd your first transaction to create a customer!",
-		CustomerOwes:     "owes you %s",
-		CustomerYouOwe:   "you owe %s",
-		CustomerSettled:  "settled ✓",
-		CustomersTotal:   "_Total: %d customers_",
 
 		ProductsTitle:    "📦 *Your Products*",
 		ProductsEmpty:    "_No products yet._",

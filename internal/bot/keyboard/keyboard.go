@@ -12,11 +12,81 @@ func MainMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
 			tgbotapi.NewKeyboardButton(m.BtnReports),
 		),
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton(m.BtnCustomers),
 			tgbotapi.NewKeyboardButton(m.BtnProducts),
 		),
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton(m.BtnSettings),
+		),
+	)
+}
+
+func SellMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnNewSell),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnListSells),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
+func BuyMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnNewBuy),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnListBuys),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
+func BorrowMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnNewBorrow),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnListBorrows),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
+func LoanMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnNewLoan),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnListLoans),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
+		),
+	)
+}
+
+func TxEditMenu(m *i18n.Messages) tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnEditAmount),
+			tgbotapi.NewKeyboardButton(m.BtnEditNote),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnDelete),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton(m.BtnCancel),
 		),
 	)
 }

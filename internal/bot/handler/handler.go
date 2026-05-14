@@ -76,8 +76,6 @@ func (h *Handler) HandleUpdate(update tgbotapi.Update) {
 		h.startReport(msg, m)
 	case m.BtnToday, m.BtnThisWeek, m.BtnThisMonth:
 		h.handleReportPeriod(ctx, msg, m)
-	case m.BtnCustomers:
-		h.showCustomers(ctx, msg, m)
 	case m.BtnProducts:
 		h.showProducts(ctx, msg, m)
 	case m.BtnSettings:
@@ -93,6 +91,28 @@ func (h *Handler) handleConversation(ctx context.Context, msg *tgbotapi.Message,
 	// Transaction menu
 	case state.StepTxMenu:
 		h.handleTxMenu(ctx, msg, conv, m)
+
+	// Transaction sub-menus
+	case state.StepSellMenu:
+		h.handleSellMenu(ctx, msg, conv, m)
+	case state.StepBuyMenu:
+		h.handleBuyMenu(ctx, msg, conv, m)
+	case state.StepBorrowMenu:
+		h.handleBorrowMenu(ctx, msg, conv, m)
+	case state.StepLoanMenu:
+		h.handleLoanMenu(ctx, msg, conv, m)
+
+	// Transaction list → edit/delete
+	case state.StepTxListSelect:
+		h.handleTxListSelect(ctx, msg, conv, m)
+	case state.StepTxEditMenu:
+		h.handleTxEditMenu(ctx, msg, conv, m)
+	case state.StepTxEditAmount:
+		h.handleTxEditAmount(ctx, msg, conv, m)
+	case state.StepTxEditNote:
+		h.handleTxEditNote(ctx, msg, conv, m)
+	case state.StepTxDeleteConfirm:
+		h.handleTxDeleteConfirm(ctx, msg, conv, m)
 
 	// Sell flow
 	case state.StepSellProduct:
